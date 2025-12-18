@@ -1,1 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Automotive | Agentforce Assistant</title>
+    <style>
+        /* --- BRANDING & RESET --- */
+        :root {
+            --brand-primary: #0047AB; /* Deep Cobalt Blue */
+            --brand-secondary: #0f172a; /* Dark Slate */
+            --brand-accent: #00C2FF; /* Electric Blue for UI highlights */
+            --text-light: #f8fafc;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
 
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent body scroll, let chat scroll */
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo span { color: var(--brand-accent); }
+
+        /* --- MAIN LAYOUT --- */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Split screen: Marketing left, Chat right */
+            gap: 2rem;
+            padding: 3rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            height: calc(100vh - 80px); /* Fill remaining height */
+        }
+
+        /* --- LEFT COLUMN: CONTENT --- */
+        .content-panel {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-right: 2rem;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(to right, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.subtitle {
+            font-size: 1.25rem;
+            color: #94a3b8;
+            margin-bottom: 2rem;
+            max-width: 500px;
+        }
+
+        .car-showcase {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* --- RIGHT COLUMN: CHAT CONTAINER (INLINE TARGET) --- */
+        .chat-wrapper {
+            background: #fff; /* Chat usually looks best on white/light container */
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            height: 100%; 
+            max-height: 800px; /* Cap height for large screens */
+        }
+
+        /* This is the div where we want Agentforce to live */
+        #salesforce-chat-target {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            background-color: #f3f4f6; /* Light grey placeholder */
+        }
+
+        /* Loading state style */
+        .loading-placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #333;
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">APEX <span>AUTOMOTIVE</span></div>
+        <div style="font-size: 0.9rem; color: #94a3b8;">Sales Cloud Agentforce Demo</div>
+    </header>
+
+    <main>
+        <div class="content-panel">
+            <h1>Experience the<br>Future of Driving.</h1>
+            <p class="subtitle">
+                Your personal concierge is ready to help you configure your Model X, schedule a test drive, or discuss financing options instantly.
+            </p>
+            
+            <div class="car-showcase">
+                <h3 style="margin-bottom:0.5rem">Model X - 2025 Edition</h3>
+                <p style="color:#aaa; font-size: 0.9rem;">Starting at $79,900 | 0-60 in 2.8s</p>
+                <div style="margin-top:1rem; height: 100px; background: linear-gradient(90deg, #111, #333); border-radius: 8px; position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:20px; left:20px; width:40px; height:40px; background: var(--brand-accent); border-radius:50%; opacity:0.2;"></div>
+                    <div style="padding: 30px; text-align:center; color: #555; font-style: italic;">[Car Image Placeholder]</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-wrapper">
+            <div id="salesforce-chat-target">
+                <div class="loading-placeholder">
+                    <p>Initializing Agentforce...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script type='text/javascript'>
+        function initEmbeddedMessaging() {
+            try {
+                // 1. Define the specific element where the chat should load (Inline Mode)
+                embeddedservice_bootstrap.settings.language = 'en_US'; 
+                
+                // IMPORTANT: This tells the script to look for our div
+                embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
+
+                // 2. Initialize
+                embeddedservice_bootstrap.init(
+                    '00DIc000000HJCl',
+                    'MRI_Sales_Chat_V2',
+                    'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878',
+                    {
+                        scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
+                    }
+                );
+            } catch (err) {
+                console.error('Error loading Embedded Messaging: ', err);
+            }
+        };
+
+        // 3. Helper: Auto-open the chat if it doesn't open by default
+        // Standard Enhanced Chat sometimes defaults to a button even if target is set.
+        // This listener waits for the API to be ready, then forces the chat window open.
+        window.addEventListener("onEmbeddedMessagingReady", () => {
+            console.log("Agentforce Ready - Launching...");
+            // Remove our loading text
+            const loader = document.querySelector('.loading-placeholder');
+            if(loader) loader.style.display = 'none';
+
+            // Programmatically launch the chat
+            embeddedservice_bootstrap.utilAPI.launchChat();
+        });
+
+    </script>
+    <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+</body>
+</html>
