@@ -485,10 +485,13 @@
                 console.log("[DEBUG] Document already complete. Initializing immediately.");
                 initEmbeddedMessaging();
             } else {
-                console.log("[DEBUG] Document not complete. Adding window.onload listener.");
-                window.addEventListener('load', () => {
-                    console.log("[DEBUG] Window onload fired. Initializing now.");
-                    initEmbeddedMessaging();
+                console.log("[DEBUG] Document not complete. Listening for readyState change...");
+                // FIXED: Use readystatechange to detect when state becomes complete
+                document.addEventListener('readystatechange', () => {
+                    if (document.readyState === 'complete') {
+                        console.log("[DEBUG] readyState changed to complete. Initializing.");
+                        initEmbeddedMessaging();
+                    }
                 });
             }
         }
@@ -509,7 +512,7 @@
 
                 console.log("[DEBUG] Calling embeddedservice_bootstrap.init()...");
                 
-                // FIXED: Removed .then() because init() does not return a Promise here
+                // NO .then() block here anymore
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
