@@ -35,6 +35,8 @@
             flex-direction: column;
             overflow-y: auto; 
             position: relative;
+            /* Transition for smooth resizing when chat opens */
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
         header.global-header {
@@ -55,7 +57,7 @@
         h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
         p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
 
-        /* --- NEW CTA BUTTON --- */
+        /* --- CTA BUTTON --- */
         .cta-btn {
             background-color: var(--brand-accent);
             color: var(--brand-dark);
@@ -78,23 +80,36 @@
             background-color: #33cfff;
         }
 
-        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
+        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR (HIDDEN BY DEFAULT) --- */
         .chat-wrapper {
             background: #fff; 
-            width: var(--chat-width-normal);
+            
+            /* HIDDEN STATE */
+            width: 0; 
+            opacity: 0;
+            border-left: 0; /* No border when hidden */
+            
             height: 100vh; 
             display: flex;       
             flex-direction: column; 
             position: relative;
             z-index: 50;
+            overflow: hidden; /* Keeps internal content hidden while width is 0 */
             
-            border-left: 1px solid #333;
-            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
-            
-            transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* Smooth Expansion Animation */
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        .chat-wrapper.expanded {
+        /* VISIBLE STATE (Applied via JS) */
+        .chat-wrapper.visible {
+            width: var(--chat-width-normal);
+            opacity: 1;
+            border-left: 1px solid #333;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
+        }
+
+        /* EXPANDED STATE (Wide) */
+        .chat-wrapper.visible.expanded {
             width: var(--chat-width-expanded);
         }
 
@@ -111,6 +126,10 @@
             font-size: 16px; 
             flex-shrink: 0; 
             border-bottom: 1px solid #1e293b; 
+            
+            /* Ensure header doesn't wrap/break during animation */
+            white-space: nowrap; 
+            min-width: 380px; /* Forces layout stability */
         }
 
         .header-branding {
@@ -180,6 +199,7 @@
             border: 1px solid #e2e8f0;
             transform-origin: top right;
             animation: fadeIn 0.15s ease-out;
+            text-align: left;
         }
 
         .dropdown-menu.show {
@@ -232,6 +252,7 @@
             flex-shrink: 0;
             z-index: 40;
             letter-spacing: 0.3px;
+            min-width: 380px; /* Prevent wrapping during animation */
         }
         
         .banner-close-btn {
@@ -259,6 +280,7 @@
             flex: 1; 
             width: 100%;
             background-color: #f3f4f6;
+            min-width: 380px; /* Prevent iframe collapse during animation */
         }
 
     </style>
@@ -273,7 +295,6 @@
 
         <div class="content-panel">
             <h1>Experience the<br>Future of Driving.</h1>
-            
             <p class="subtitle">Click Launch Chat to talk with our agent.</p>
             
             <button class="cta-btn" onclick="launchChatCTA()">
@@ -292,7 +313,6 @@
             </div>
             
             <div class="header-actions">
-                
                 <button class="icon-btn" onclick="toggleChatExpand()" title="Toggle View">
                     <svg class="icon-svg icon-expand" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
                     <svg class="icon-svg icon-collapse" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>
@@ -325,8 +345,33 @@
 
     <script type='text/javascript'>
         
-        // --- UI FUNCTIONS ---
         let isExpanded = false;
+
+        // --- 1. OPEN CHAT LOGIC ---
+        function launchChatCTA() {
+            const wrapper = document.getElementById('chatWrapper');
+            // Add 'visible' class to trigger CSS transition
+            wrapper.classList.add('visible');
+            
+            // Optional: Auto-launch embedded chat if needed (usually auto-inits on load)
+             if(embeddedservice_bootstrap.utilAPI) {
+                embeddedservice_bootstrap.utilAPI.launchChat();
+            }
+        }
+
+        // --- 2. CLOSE CHAT LOGIC ---
+        function handleChatClose() {
+            const wrapper = document.getElementById('chatWrapper');
+            // Hide the sidebar
+            wrapper.classList.remove('visible');
+            wrapper.classList.remove('expanded'); // Reset expansion state
+            isExpanded = false;
+
+            // Clear session (optional, depending on if you want to save history)
+            if(embeddedservice_bootstrap.utilAPI) {
+                embeddedservice_bootstrap.utilAPI.clearSession();
+            }
+        }
 
         function toggleChatExpand() {
             const wrapper = document.getElementById('chatWrapper');
@@ -337,21 +382,6 @@
             } else {
                 wrapper.classList.remove('expanded');
             }
-        }
-
-        // --- NEW LAUNCH FUNCTION ---
-        // This makes the sidebar "jump" out or expand to show activity
-        function launchChatCTA() {
-            const wrapper = document.getElementById('chatWrapper');
-            
-            // Expand the chat to draw attention
-            if (!isExpanded) {
-                toggleChatExpand();
-            }
-            
-            // Optional: You could also focus the chat iframe via API if available,
-            // but for now, expanding it is a strong visual cue.
-            console.log("Chat launched via Main CTA");
         }
 
         // --- MENU LOGIC ---
@@ -398,12 +428,6 @@
         function closePrivacyBanner() {
             const banner = document.getElementById('privacyBanner');
             if (banner) banner.style.display = 'none';
-        }
-
-        function handleChatClose() {
-            if(embeddedservice_bootstrap.utilAPI) {
-                embeddedservice_bootstrap.utilAPI.clearSession();
-            }
         }
 
         // --- SALESFORCE INIT ---
