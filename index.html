@@ -63,17 +63,47 @@
             overflow: hidden;
             height: 100%; 
             max-height: 800px; 
+            display: flex;       
+            flex-direction: column; 
             position: relative;
         }
 
-        /* FIX: We ensure this target is absolutely positioned to fill the wrapper 
-           This mimics the fixed height success of your working code 
-        */
+        /* --- CUSTOM CHAT HEADER --- */
+        .chat-header {
+            background: #0047AB; /* Match Brand Primary */
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-bottom: 1px solid #eee;
+            z-index: 20; 
+        }
+
+        .close-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        .close-btn:hover { background: rgba(255,255,255,0.4); }
+
+        /* --- CHAT TARGET --- */
         #salesforce-chat-target {
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            position: relative;
+            flex: 1; 
             width: 100%;
-            height: 100%;
             background-color: #f3f4f6;
         }
     </style>
@@ -92,22 +122,33 @@
         </div>
 
         <div class="chat-wrapper">
+            <div class="chat-header">
+                <span>MRI Sales Agent</span>
+                <button class="close-btn" onclick="handleCloseClick()">×</button>
+            </div>
+
             <div id="salesforce-chat-target"></div>
         </div>
     </main>
 
     <script type='text/javascript'>
+        
+        // --- 1. BUTTON LOGIC ---
+        function handleCloseClick() {
+            console.log("Close button clicked - (Functionality disabled for debugging)");
+        }
 
+        // --- 2. INIT LOGIC ---
         function initEmbeddedMessaging() {
             try {
-                // 2. Simple Configuration
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.displayMode = 'inline';
                 
-                // 3. Target the element
+                // Hide Native Header
+                embeddedservice_bootstrap.settings.headerEnabled = false; 
+
                 embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
 
-                // 4. Initialize WITHOUT .then() (The critical fix)
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
