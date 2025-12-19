@@ -75,12 +75,12 @@
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER (UPDATED COLOR) --- */
+        /* --- CHAT HEADER --- */
         .chat-header {
-            background: var(--brand-dark); /* Dark Slate #0f172a */
+            background: var(--brand-dark); 
             color: white;
             
-            height: 64px; 
+            height: 70px; 
             padding: 0 1.2rem;
             
             display: flex;
@@ -88,9 +88,9 @@
             align-items: center; 
             
             font-weight: 700;
-            font-size: 1.05rem;
+            font-size: 1.1rem;
             flex-shrink: 0; 
-            border-bottom: 1px solid #1e293b; /* Subtle separator */
+            border-bottom: 1px solid #1e293b; 
         }
 
         .header-branding {
@@ -101,38 +101,44 @@
         }
 
         .header-logo-img {
-            height: 30px; 
+            height: 32px; 
             width: auto;
             display: block;
             object-fit: contain;
         }
 
-        /* Buttons Container */
         .header-actions { 
             display: flex; 
             align-items: center; 
-            gap: 5px; 
+            gap: 8px; 
             height: 100%;
         }
 
-        /* --- BUTTONS (UPDATED COLORS) --- */
+        /* --- BIGGER BUTTONS --- */
         .icon-btn {
             background: transparent; 
             border: none;
-            color: var(--text-muted); /* Muted Gray by default */
-            width: 34px;
-            height: 34px;
-            border-radius: 6px; 
+            color: var(--text-muted); 
+            width: 40px;
+            height: 40px;
+            border-radius: 8px; 
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center; 
             transition: all 0.2s ease;
         }
-        /* Hover Effect: Light background, White icon */
+        
         .icon-btn:hover { 
             background: rgba(255,255,255,0.1); 
             color: white;
+        }
+
+        /* --- BIGGER ICONS --- */
+        .icon-svg { 
+            width: 24px; 
+            height: 24px; 
+            fill: currentColor; 
         }
 
         .icon-btn .icon-collapse { display: none; } 
@@ -141,20 +147,15 @@
         .chat-wrapper.expanded .icon-expand { display: none; }
 
 
-        /* --- DISCLAIMER BANNER (TEXT WRAPPING FIX) --- */
+        /* --- DISCLAIMER BANNER --- */
         .privacy-banner {
-            background-color: var(--brand-primary); /* Deep Cobalt */
+            background-color: var(--brand-primary); 
             color: white; 
-            
-            /* Spacing */
             padding: 0.8rem 1rem; 
-            padding-right: 40px; /* CRITICAL: Reserve space on right for Close Button */
-            
+            padding-right: 40px; 
             font-size: 0.8rem;
             font-weight: 500;
-            line-height: 1.4; /* Better readability for wrapped text */
-            
-            /* Layout */
+            line-height: 1.4; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -171,13 +172,10 @@
             color: white; 
             font-size: 1.2rem;
             cursor: pointer;
-            
-            /* Absolute positioning relative to the banner container */
             position: absolute; 
             right: 10px;
             top: 50%;
-            transform: translateY(-50%); /* Perfectly centered vertically */
-            
+            transform: translateY(-50%); 
             opacity: 0.7;
             display: flex;
             align-items: center;
@@ -194,8 +192,6 @@
             width: 100%;
             background-color: #f3f4f6;
         }
-
-        .icon-svg { width: 18px; height: 18px; fill: currentColor; }
 
     </style>
 </head>
@@ -218,7 +214,7 @@
         <div class="chat-header">
             <div class="header-branding">
                 <img src="https://munawirrahman.github.io/AgentforceTest/logo.png" alt="MRI Logo" class="header-logo-img">
-                <span>MRI Sales Agent</span>
+                <span>Apex Automotive Agent</span>
             </div>
             
             <div class="header-actions">
@@ -227,7 +223,9 @@
                     <svg class="icon-svg icon-collapse" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>
                 </button>
 
-                <button class="icon-btn" onclick="handleChatClose()" title="Close Session">×</button>
+                <button class="icon-btn" onclick="handleChatClose()" title="Close Session">
+                    <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                </button>
             </div>
         </div>
 
