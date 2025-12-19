@@ -66,7 +66,7 @@
             font-weight: 700;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; /* Added opacity transition */
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -77,6 +77,16 @@
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(0, 194, 255, 0.3);
             background-color: #33cfff;
+        }
+
+        /* --- DISABLED STATE --- */
+        .cta-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none; /* Prevents clicks */
+            box-shadow: none;
+            transform: none;
+            background-color: #64748b; /* Grey out color */
         }
 
         /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
@@ -291,7 +301,7 @@
             <h1>Experience the<br>Future of Driving.</h1>
             <p class="subtitle">Click Launch Chat to talk with our agent.</p>
             
-            <button class="cta-btn" onclick="launchChatCTA()">
+            <button class="cta-btn" id="launchChatBtn" onclick="launchChatCTA()" disabled>
                 <span>Launch Chat</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             </button>
@@ -341,12 +351,10 @@
     <script type='text/javascript'>
         
         let isExpanded = false;
-        
-        // --- DATA VARIABLES ---
         let currentJwt = null;
         let currentConversationId = null;
 
-        // --- 1. CAPTURE JWT ---
+        // --- 1. DATA EVENT LISTENERS ---
         window.addEventListener('message', (event) => {
             if (event.data && event.data.type === 'web_storage') {
                 if (event.data.payload && event.data.payload.jwt) {
@@ -356,14 +364,23 @@
             }
         });
 
-        // --- 2. CAPTURE CONVERSATION ID ---
         window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
-            const conversationId = event.detail.conversationId;
-            currentConversationId = conversationId;
+            currentConversationId = event.detail.conversationId;
             console.log("Captured Conversation ID:", currentConversationId);
         });
 
-        // --- 3. OPEN CHAT ---
+        // --- 2. READY LISTENER (ENABLES BUTTON) ---
+        window.addEventListener('onEmbeddedMessagingReady', (event) => {
+            console.log("Salesforce Chat is READY. Enabling button...");
+            const btn = document.getElementById('launchChatBtn');
+            if(btn) {
+                btn.removeAttribute('disabled');
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            }
+        });
+
+        // --- 3. UI LOGIC ---
         function launchChatCTA() {
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.add('visible');
@@ -372,19 +389,15 @@
             }
         }
 
-        // --- 4. CLOSE CHAT & DELETE CONVERSATION ---
         function handleChatClose() {
-            // A. Hide the sidebar immediately
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.remove('visible');
             wrapper.classList.remove('expanded');
             isExpanded = false;
 
-            // B. Trigger DELETE API
             if (currentConversationId && currentJwt) {
                 const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
-                
-                console.log("Deleting conversation:", currentConversationId);
+                console.log("Deleting conversation...");
 
                 fetch(url, {
                     method: 'DELETE',
@@ -396,15 +409,12 @@
                 .then(response => {
                     if (response.ok) {
                         console.log("Conversation deleted successfully.");
-                        // Optional: Reset local IDs to prevent duplicate deletion attempts
-                        currentConversationId = null;
+                        currentConversationId = null; 
                     } else {
                         console.error("Failed to delete conversation:", response.status);
                     }
                 })
                 .catch(err => console.error("API Error:", err));
-            } else {
-                console.warn("Skipping DELETE: Missing Conversation ID or JWT.");
             }
         }
 
@@ -418,7 +428,6 @@
             }
         }
 
-        // --- MENU LOGIC ---
         function toggleMenu(event) {
             if(event) event.stopPropagation();
             const menu = document.getElementById('headerDropdown');
@@ -441,7 +450,6 @@
         window.addEventListener('blur', function() {
             const menu = document.getElementById('headerDropdown');
             const btn = document.getElementById('menuBtn');
-            
             if (menu && menu.classList.contains('show')) {
                 menu.classList.remove('show');
                 btn.classList.remove('active');
@@ -464,8 +472,22 @@
             if (banner) banner.style.display = 'none';
         }
 
-        // --- SALESFORCE INIT ---
+        // --- 4. SAFE INITIALIZATION ---
+        // This function is triggered by the Script Tag onload, BUT it waits for window.load
+        function onScriptLoaded() {
+            console.log("Script loaded. Waiting for Page Load...");
+            
+            // Check if page is already loaded
+            if (document.readyState === 'complete') {
+                initEmbeddedMessaging();
+            } else {
+                // Wait for page to finish loading before initializing
+                window.addEventListener('load', initEmbeddedMessaging);
+            }
+        }
+
         function initEmbeddedMessaging() {
+            console.log("Initializing Embedded Messaging...");
             try {
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.displayMode = 'inline';
@@ -485,7 +507,8 @@
             }
         };
     </script>
-    <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+    
+    <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='onScriptLoaded()'></script>
 
 </body>
 </html>
