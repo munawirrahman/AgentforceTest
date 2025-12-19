@@ -97,12 +97,6 @@
     </main>
 
     <script type='text/javascript'>
-        // 1. Cleanup on refresh (From your working code)
-        window.addEventListener("beforeunload", () => {
-            if(embeddedservice_bootstrap.utilAPI) {
-                embeddedservice_bootstrap.utilAPI.removeAllComponents();
-            }
-        });
 
         function initEmbeddedMessaging() {
             try {
