@@ -166,7 +166,6 @@
     <script type='text/javascript'>
         function initEmbeddedMessaging() {
             try {
-                // 1. Get the specific element
                 const targetElement = document.getElementById("salesforce-chat-target");
 
                 if (!targetElement) {
@@ -176,14 +175,13 @@
 
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.devMode = true;
-                embeddedservice_bootstrap.settings.displayMode = 'inline'; // CRITICAL
+                embeddedservice_bootstrap.settings.displayMode = 'inline';
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
                 embeddedservice_bootstrap.settings.hideChatButtonOnLoad = true;
-                
-                // 2. Assign the element to settings
                 embeddedservice_bootstrap.settings.targetElement = targetElement;
 
-                // 3. Initialize
+                // FIX: Removed .then() and .catch() from the init call
+                // We just call init() and let the Event Listener handle the rest.
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
@@ -191,29 +189,35 @@
                     {
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
-                ).then(() => {
-                    console.log("Embedded Messaging Init Promise Resolved");
-                }).catch(err => {
-                    console.error("Init Failed:", err);
-                });
+                );
 
             } catch (err) {
-                console.error('Error loading Embedded Messaging: ', err);
+                console.error('Error triggering Embedded Messaging: ', err);
             }
         };
 
-        // 4. Listen for Ready Event to Clear Loader & Launch
+        // This is the ONLY reliable way to know if it loaded successfully
         window.addEventListener("onEmbeddedMessagingReady", () => {
-            console.log("Agentforce Ready - Removing Loader...");
+            console.log("Agentforce Ready Event Received.");
             
-            // Remove the loading text so the chat is visible
+            // 1. Clear the loader
             const loader = document.querySelector('.loading-placeholder');
             if(loader) loader.remove();
 
-            // Explicitly launch chat
+            // 2. Launch the chat
             embeddedservice_bootstrap.utilAPI.launchChat()
                 .then(() => console.log("Chat Launched Successfully"))
                 .catch((e) => console.log("Chat launch info:", e));
+        });
+        
+        // Optional: Add a listener for failure specifically
+        window.addEventListener("onEmbeddedMessagingError", (event) => {
+            console.error("Agentforce Error Event:", event.detail);
+            const loader = document.querySelector('.loading-placeholder p');
+            if(loader) {
+                loader.innerText = "Connection Failed";
+                loader.style.color = "red";
+            }
         });
 
     </script>
