@@ -35,7 +35,6 @@
             flex-direction: column;
             overflow-y: auto; 
             position: relative;
-            /* Transition for smooth resizing when chat opens */
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
@@ -80,27 +79,21 @@
             background-color: #33cfff;
         }
 
-        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR (HIDDEN BY DEFAULT) --- */
+        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
         .chat-wrapper {
             background: #fff; 
-            
-            /* HIDDEN STATE */
             width: 0; 
             opacity: 0;
-            border-left: 0; /* No border when hidden */
-            
+            border-left: 0; 
             height: 100vh; 
             display: flex;        
             flex-direction: column; 
             position: relative;
             z-index: 50;
-            overflow: hidden; /* Keeps internal content hidden while width is 0 */
-            
-            /* Smooth Expansion Animation */
+            overflow: hidden; 
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* VISIBLE STATE (Applied via JS) */
         .chat-wrapper.visible {
             width: var(--chat-width-normal);
             opacity: 1;
@@ -108,17 +101,21 @@
             box-shadow: -5px 0 30px rgba(0,0,0,0.3);
         }
 
-        /* EXPANDED STATE (Wide) */
         .chat-wrapper.visible.expanded {
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER --- */
+        /* --- CHAT HEADER (UPDATED FOR WRAPPING) --- */
         .chat-header {
             background: var(--brand-dark); 
             color: white;
-            height: 70px; 
-            padding: 0 1rem; /* Slightly reduced padding to save space */
+            /* CHANGE 1: Flexible height to fit wrapped text */
+            min-height: 70px; 
+            height: auto;
+            
+            /* CHANGE 2: Add vertical padding for when it grows */
+            padding: 10px 1rem; 
+            
             display: flex;
             justify-content: space-between;
             align-items: center; 
@@ -126,9 +123,6 @@
             font-size: 16px; 
             flex-shrink: 0; 
             border-bottom: 1px solid #1e293b; 
-            
-            /* FIXED: Replaced min-width with 100% width handling */
-            white-space: nowrap; 
             width: 100%;
         }
 
@@ -137,17 +131,14 @@
             align-items: center;
             gap: 10px;
             height: 100%;
-            /* FIXED: Allow branding to shrink if needed so buttons stay visible */
             flex: 1;
             min-width: 0;
-            overflow: hidden;
         }
 
         .header-branding span {
-            /* FIXED: Truncate text with ellipsis if it's too long */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* CHANGE 3: Allow text to wrap normally */
+            white-space: normal; 
+            line-height: 1.2; /* Tighter line height looks better when wrapped */
         }
 
         .header-logo-img {
@@ -156,15 +147,17 @@
             display: block;
             object-fit: contain;
             flex-shrink: 0;
+            align-self: center; /* Ensures logo stays centered if text wraps */
         }
 
         .header-actions { 
             display: flex; 
             align-items: center; 
-            gap: 4px; /* Reduced gap slightly */
+            gap: 4px; 
             height: 100%;
-            /* FIXED: Prevent buttons from shrinking */
             flex-shrink: 0;
+            align-self: flex-start; /* Optional: Aligns buttons to top if header gets very tall */
+            margin-top: 5px; /* Adjust based on alignment preference */
         }
 
         /* --- BUTTONS --- */
@@ -195,9 +188,7 @@
         }
 
         /* --- DROPDOWN MENU --- */
-        .menu-container {
-            position: relative;
-        }
+        .menu-container { position: relative; }
 
         .dropdown-menu {
             position: absolute;
@@ -216,9 +207,7 @@
             text-align: left;
         }
 
-        .dropdown-menu.show {
-            display: block;
-        }
+        .dropdown-menu.show { display: block; }
 
         .menu-item {
             padding: 12px 16px;
@@ -232,10 +221,7 @@
             gap: 10px;
         }
 
-        .menu-item:hover {
-            background: #f1f5f9;
-            color: var(--brand-primary);
-        }
+        .menu-item:hover { background: #f1f5f9; color: var(--brand-primary); }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
@@ -266,7 +252,6 @@
             flex-shrink: 0;
             z-index: 40;
             letter-spacing: 0.3px;
-            /* FIXED: Removed min-width 380px to allow fitting in container */
             width: 100%;
         }
         
@@ -295,7 +280,6 @@
             flex: 1; 
             width: 100%;
             background-color: #f3f4f6;
-            /* FIXED: Removed fixed min-width to prevent overflow */
         }
 
     </style>
