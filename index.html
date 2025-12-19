@@ -105,12 +105,12 @@
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER (Text Wrap Version) --- */
+        /* --- CHAT HEADER --- */
         .chat-header {
             background: var(--brand-dark); 
             color: white;
             min-height: 70px; 
-            height: auto; /* Allow growth */
+            height: auto; 
             padding: 10px 1rem; 
             display: flex;
             justify-content: space-between;
@@ -132,7 +132,7 @@
         }
 
         .header-branding span {
-            white-space: normal; /* Enable wrapping */
+            white-space: normal; 
             line-height: 1.2;
         }
 
@@ -341,35 +341,76 @@
     <script type='text/javascript'>
         
         let isExpanded = false;
+        
+        // --- DATA VARIABLES ---
+        let currentJwt = null;
+        let currentConversationId = null;
 
-        // --- 1. OPEN CHAT LOGIC ---
+        // --- 1. CAPTURE JWT ---
+        window.addEventListener('message', (event) => {
+            if (event.data && event.data.type === 'web_storage') {
+                if (event.data.payload && event.data.payload.jwt) {
+                    currentJwt = event.data.payload.jwt;
+                    console.log("Captured JWT:", currentJwt);
+                }
+            }
+        });
+
+        // --- 2. CAPTURE CONVERSATION ID ---
+        window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
+            const conversationId = event.detail.conversationId;
+            currentConversationId = conversationId;
+            console.log("Captured Conversation ID:", currentConversationId);
+        });
+
+        // --- 3. OPEN CHAT ---
         function launchChatCTA() {
             const wrapper = document.getElementById('chatWrapper');
-            // Add 'visible' class to trigger CSS transition
             wrapper.classList.add('visible');
-            
-            // Optional: Auto-launch embedded chat if needed (usually auto-inits on load)
              if(embeddedservice_bootstrap.utilAPI) {
                 embeddedservice_bootstrap.utilAPI.launchChat();
             }
         }
 
-        // --- 2. CLOSE CHAT LOGIC ---
+        // --- 4. CLOSE CHAT & DELETE CONVERSATION ---
         function handleChatClose() {
+            // A. Hide the sidebar immediately
             const wrapper = document.getElementById('chatWrapper');
-            // Hide the sidebar
             wrapper.classList.remove('visible');
-            wrapper.classList.remove('expanded'); // Reset expansion state
+            wrapper.classList.remove('expanded');
             isExpanded = false;
-            
-            // REMOVED: Session clear logic is gone. 
-            // The chat state will remain active in the background.
+
+            // B. Trigger DELETE API
+            if (currentConversationId && currentJwt) {
+                const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
+                
+                console.log("Deleting conversation:", currentConversationId);
+
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${currentJwt}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        console.log("Conversation deleted successfully.");
+                        // Optional: Reset local IDs to prevent duplicate deletion attempts
+                        currentConversationId = null;
+                    } else {
+                        console.error("Failed to delete conversation:", response.status);
+                    }
+                })
+                .catch(err => console.error("API Error:", err));
+            } else {
+                console.warn("Skipping DELETE: Missing Conversation ID or JWT.");
+            }
         }
 
         function toggleChatExpand() {
             const wrapper = document.getElementById('chatWrapper');
             isExpanded = !isExpanded;
-            
             if (isExpanded) {
                 wrapper.classList.add('expanded');
             } else {
