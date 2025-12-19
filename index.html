@@ -300,7 +300,7 @@
             <h1>Experience the<br>Future of Driving.</h1>
             <p class="subtitle">Click Launch Chat to talk with our agent.</p>
             
-            <button class="cta-btn" id="launchChatBtn" onclick="launchChatCTA()" disabled>
+            <button class="cta-btn" id="launchChatBtn" onclick="launchChatCTA()">
                 <span>Launch Chat</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             </button>
@@ -348,18 +348,14 @@
     <script type='text/javascript'>
         
         let isExpanded = false;
+        let isInitialized = false; // CHANGED: Flag to track init state
         let currentJwt = null;
         let currentConversationId = null;
 
         // --- 1. DEBUG: CATCH-ALL MESSAGE LISTENER (To find the JWT) ---
         window.addEventListener('message', (event) => {
-            console.log('message',event);
-            // Filter to relevant origins if possible, or just log safely
             if (event.origin && event.origin.includes('https://storm-555fc987410410.my.site.com')) {
-                // Check for web_storage event type
                 if (event.data && event.data.type === 'web_storage') {
-                    
-                    // --- SPECIFIC CONSOLE LOG FOR JWT ---
                     if (event.data.payload && event.data.payload) {
                         currentJwt = event.data.payload;
                         console.log(">> Listener caught JWT:", currentJwt);
@@ -370,29 +366,22 @@
 
         // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
         window.addEventListener('onEmbeddedMessagingConversationParticipantChanged', (event) => {
-            console.log('onEmbeddedMessagingConversationParticipantChanged',event);
             if (event.detail && event.detail.conversationId) {
                 currentConversationId = event.detail.conversationId;
-                
-                // --- SPECIFIC CONSOLE LOG FOR CONVERSATION ID ---
                 console.log(">> Listener caught Conversation ID:", currentConversationId);
             }
         });
 
         // --- 3. READY LISTENER ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
-            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.", event);
-            const btn = document.getElementById('launchChatBtn');
-            if(btn) {
-                btn.removeAttribute('disabled');
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
-            }
+            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
+            // We don't need to enable the button here anymore since it's enabled by default
         });
 
         // --- 4. MANUAL DEBUG HELPER ---
         window.printChatDebug = function() {
             console.table({
+                "Initialized": isInitialized,
                 "JWT": currentJwt || "Not Captured",
                 "Conversation ID": currentConversationId || "Not Captured",
                 "Ready State": document.readyState
@@ -404,7 +393,15 @@
             console.log("[DEBUG] Launch Chat clicked.");
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.add('visible');
-            // 'inline' mode implies the iframe is already present in the target div.
+            
+            // CHANGED: Check if initialized. If not, run initEmbeddedMessaging.
+            if (!isInitialized) {
+                console.log("[DEBUG] First interaction detected. Initializing Embedded Messaging...");
+                initEmbeddedMessaging();
+                isInitialized = true;
+            } else {
+                console.log("[DEBUG] Already initialized. Sidebar opened.");
+            }
         }
 
         function handleChatClose() {
@@ -498,16 +495,8 @@
 
         // --- INIT LOGIC ---
         function onScriptLoaded() {
-            console.log(`[DEBUG] Script loaded. State: ${document.readyState}`);
-            if (document.readyState === 'complete') {
-                initEmbeddedMessaging();
-            } else {
-                document.addEventListener('readystatechange', () => {
-                    if (document.readyState === 'complete') {
-                        initEmbeddedMessaging();
-                    }
-                });
-            }
+            console.log(`[DEBUG] Script loaded. Waiting for user interaction...`);
+            // CHANGED: Removed automatic init call here.
         }
 
         function initEmbeddedMessaging() {
