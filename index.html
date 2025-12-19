@@ -10,6 +10,7 @@
             --brand-primary: #0047AB; /* Deep Cobalt Blue */
             --brand-accent: #00C2FF; /* Electric Blue */
             --text-light: #f8fafc;
+            --text-dark: #0f172a;     /* Dark Slate */
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             --chat-width-normal: 380px;
             --chat-width-expanded: 50vw; 
@@ -73,51 +74,63 @@
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER --- */
+        /* --- CHAT HEADER (FIXED ALIGNMENT) --- */
         .chat-header {
-            background: #0047AB; 
-            color: white;
-            padding: 1rem 1.2rem;
+            background: var(--brand-accent); 
+            color: var(--text-dark);
+            
+            /* Use Fixed Height for perfect vertical alignment */
+            height: 64px; 
+            padding: 0 1.2rem;
+            
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            font-size: 1rem;
+            align-items: center; /* Critical for vertical centering */
+            
+            font-weight: 700;
+            font-size: 1.05rem;
             flex-shrink: 0; 
-            border-bottom: 1px solid rgba(255,255,255,0.1); 
+            border-bottom: 1px solid rgba(0,0,0,0.05); 
         }
 
-        /* Logo & Text Container */
+        /* Branding Container (Logo + Text) */
         .header-branding {
             display: flex;
-            align-items: center;
+            align-items: center; /* Ensures logo and text center vertically */
             gap: 12px;
+            height: 100%;
         }
 
         .header-logo-img {
-            height: 32px; /* Adjust size as needed */
+            height: 30px; /* Specific height to match text balance */
             width: auto;
             display: block;
+            object-fit: contain;
         }
 
-        .header-actions { display: flex; gap: 5px; }
+        /* Actions Container (Buttons) */
+        .header-actions { 
+            display: flex; 
+            align-items: center; /* Center buttons vertically */
+            gap: 5px; 
+            height: 100%;
+        }
 
+        /* Buttons */
         .icon-btn {
-            background: transparent; /* UPDATED: Removed background */
+            background: transparent; 
             border: none;
-            color: white;
-            width: 32px;
-            height: 32px;
-            border-radius: 4px; 
+            color: var(--text-dark); 
+            width: 34px;
+            height: 34px;
+            border-radius: 6px; 
             cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* Center icon inside button */
             transition: all 0.2s;
-            font-size: 1rem;
         }
-        /* Only show background on hover */
-        .icon-btn:hover { background: rgba(255,255,255,0.1); }
+        .icon-btn:hover { background: rgba(0,0,0,0.08); }
 
         /* Icon Switching Logic */
         .icon-btn .icon-collapse { display: none; } 
@@ -129,11 +142,11 @@
 
         /* --- DISCLAIMER BANNER --- */
         .privacy-banner {
-            background-color: var(--brand-accent); 
-            color: #0f172a; 
-            padding: 0.6rem 1rem;
+            background-color: var(--brand-primary); 
+            color: white; 
+            padding: 0.7rem 1rem;
             font-size: 0.8rem;
-            font-weight: 600;
+            font-weight: 500;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -141,17 +154,20 @@
             flex-shrink: 0;
             margin-top: 0; 
             z-index: 40;
+            letter-spacing: 0.3px;
         }
         
         .banner-close-btn {
             background: transparent;
             border: none;
-            color: #0f172a;
+            color: white; 
             font-size: 1.2rem;
             cursor: pointer;
             position: absolute; 
-            right: 10px;
-            opacity: 0.6;
+            right: 12px;
+            opacity: 0.8;
+            display: flex;
+            align-items: center;
         }
         .banner-close-btn:hover { opacity: 1; }
 
@@ -229,7 +245,9 @@
         }
 
         function handleChatClose() {
-            console.log('close chat');
+            if(embeddedservice_bootstrap.utilAPI) {
+                embeddedservice_bootstrap.utilAPI.clearSession();
+            }
         }
 
         // --- SALESFORCE INIT ---
