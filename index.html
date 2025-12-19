@@ -371,6 +371,12 @@
         // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
         window.addEventListener('onEmbeddedMessagingConversationParticipantChanged', (event) => {
             console.log('onEmbeddedMessagingConversationParticipantChanged',event);
+            if (event.detail && event.detail.conversationId) {
+                currentConversationId = event.detail.conversationId;
+                
+                // --- SPECIFIC CONSOLE LOG FOR CONVERSATION ID ---
+                console.log(">> Listener caught Conversation ID:", currentConversationId);
+            }
         });
 
         // --- 3. READY LISTENER ---
