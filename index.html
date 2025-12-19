@@ -22,7 +22,7 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            overflow: hidden; /* Prevent body scroll, let chat scroll */
+            overflow: hidden; 
         }
 
         /* --- HEADER --- */
@@ -51,13 +51,13 @@
         main {
             flex: 1;
             display: grid;
-            grid-template-columns: 1fr 1fr; /* Split screen: Marketing left, Chat right */
+            grid-template-columns: 1fr 1fr; /* Split screen */
             gap: 2rem;
             padding: 3rem;
             max-width: 1600px;
             margin: 0 auto;
             width: 100%;
-            height: calc(100vh - 80px); /* Fill remaining height */
+            height: calc(100vh - 80px); 
         }
 
         /* --- LEFT COLUMN: CONTENT --- */
@@ -94,7 +94,7 @@
 
         /* --- RIGHT COLUMN: CHAT CONTAINER (INLINE TARGET) --- */
         .chat-wrapper {
-            background: #fff; /* Chat usually looks best on white/light container */
+            background: #fff; 
             border-radius: 20px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             overflow: hidden;
@@ -102,15 +102,18 @@
             display: flex;
             flex-direction: column;
             height: 100%; 
-            max-height: 800px; /* Cap height for large screens */
+            max-height: 800px; 
         }
 
-        /* This is the div where we want Agentforce to live */
+        /* --- CRITICAL FIX FOR INLINE MODE --- */
+        /* The target div must have explicit height to contain the Salesforce iframe */
         #salesforce-chat-target {
             width: 100%;
-            height: 100%;
+            height: 100%;       /* Ensure it fills parent */
+            flex: 1;            /* Flex grow to fill available space */
             position: relative;
-            background-color: #f3f4f6; /* Light grey placeholder */
+            background-color: #f3f4f6; 
+            min-height: 500px;  /* Safety fallback */
         }
 
         /* Loading state style */
@@ -121,6 +124,7 @@
             transform: translate(-50%, -50%);
             color: #333;
             text-align: center;
+            z-index: 10; /* Ensure this sits on top until removed */
         }
 
     </style>
@@ -144,7 +148,7 @@
                 <p style="color:#aaa; font-size: 0.9rem;">Starting at $79,900 | 0-60 in 2.8s</p>
                 <div style="margin-top:1rem; height: 100px; background: linear-gradient(90deg, #111, #333); border-radius: 8px; position:relative; overflow:hidden;">
                     <div style="position:absolute; top:20px; left:20px; width:40px; height:40px; background: var(--brand-accent); border-radius:50%; opacity:0.2;"></div>
-                    <div style="padding: 30px; text-align:center; color: #555; font-style: italic;"><img src="https://www.oto.com/mobil-baru/tesla/model-x"></div>
+                    <div style="padding: 30px; text-align:center; color: #555; font-style: italic;">Vehicle Preview</div>
                 </div>
             </div>
         </div>
@@ -153,6 +157,7 @@
             <div id="salesforce-chat-target">
                 <div class="loading-placeholder">
                     <p>Initializing Agentforce...</p>
+                    <small style="color: #666; display: block; margin-top: 5px;">Connecting to Salesforce...</small>
                 </div>
             </div>
         </div>
@@ -161,17 +166,24 @@
     <script type='text/javascript'>
         function initEmbeddedMessaging() {
             try {
-                // 1. Define the specific element where the chat should load (Inline Mode)
+                // 1. Get the specific element
+                const targetElement = document.getElementById("salesforce-chat-target");
+
+                if (!targetElement) {
+                    console.error("Target Element not found!");
+                    return;
+                }
+
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.devMode = true;
-                embeddedservice_bootstrap.settings.displayMode = 'inline';
-                embeddedservice_bootstrap.settings.headerEnabled = false; // Optional
+                embeddedservice_bootstrap.settings.displayMode = 'inline'; // CRITICAL
+                embeddedservice_bootstrap.settings.headerEnabled = false; 
                 embeddedservice_bootstrap.settings.hideChatButtonOnLoad = true;
                 
-                // IMPORTANT: This tells the script to look for our div
-                embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
+                // 2. Assign the element to settings
+                embeddedservice_bootstrap.settings.targetElement = targetElement;
 
-                // 2. Initialize
+                // 3. Initialize
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
@@ -179,23 +191,29 @@
                     {
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
-                );
+                ).then(() => {
+                    console.log("Embedded Messaging Init Promise Resolved");
+                }).catch(err => {
+                    console.error("Init Failed:", err);
+                });
+
             } catch (err) {
                 console.error('Error loading Embedded Messaging: ', err);
             }
         };
 
-        // 3. Helper: Auto-open the chat if it doesn't open by default
-        // Standard Enhanced Chat sometimes defaults to a button even if target is set.
-        // This listener waits for the API to be ready, then forces the chat window open.
+        // 4. Listen for Ready Event to Clear Loader & Launch
         window.addEventListener("onEmbeddedMessagingReady", () => {
-            console.log("Agentforce Ready - Launching...");
-            // Remove our loading text
+            console.log("Agentforce Ready - Removing Loader...");
+            
+            // Remove the loading text so the chat is visible
             const loader = document.querySelector('.loading-placeholder');
-            if(loader) loader.style.display = 'none';
+            if(loader) loader.remove();
 
-            // Programmatically launch the chat
-            embeddedservice_bootstrap.utilAPI.launchChat();
+            // Explicitly launch chat
+            embeddedservice_bootstrap.utilAPI.launchChat()
+                .then(() => console.log("Chat Launched Successfully"))
+                .catch((e) => console.log("Chat launch info:", e));
         });
 
     </script>
