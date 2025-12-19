@@ -35,7 +35,8 @@
             flex-direction: column;
             overflow-y: auto; 
             position: relative;
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* When chat opens, we can optionally shrink this area, but for overlay style we leave it */
+            width: 100%; 
         }
 
         header.global-header {
@@ -79,46 +80,49 @@
             background-color: #33cfff;
         }
 
-        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
+        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR (OFF-CANVAS FIX) --- */
         .chat-wrapper {
             background: #fff; 
             
-            /* Hidden by default */
-            width: 0; 
-            opacity: 0;
-            border-left: 0; 
-            
+            /* Dimensions: Always have width so iframe loads correctly */
+            width: var(--chat-width-normal);
             height: 100vh; 
+            
+            /* Positioning: Fixed to the right side */
+            position: fixed;
+            top: 0;
+            right: 0;
+            z-index: 50;
+            
+            /* Hidden State: Slide it off the screen to the right */
+            transform: translateX(100%); 
+            
             display: flex;       
             flex-direction: column; 
-            position: relative;
-            z-index: 50;
-            overflow: hidden; 
+            border-left: 1px solid #333;
             
-            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            /* Smooth Slide Animation */
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* VISIBLE STATE */
+        /* VISIBLE STATE: Slide it back to 0 (screen edge) */
         .chat-wrapper.visible {
-            width: var(--chat-width-normal);
-            opacity: 1;
-            border-left: 1px solid #333;
+            transform: translateX(0);
             box-shadow: -5px 0 30px rgba(0,0,0,0.3);
         }
 
-        /* EXPANDED STATE */
+        /* EXPANDED STATE: Widen the width */
         .chat-wrapper.visible.expanded {
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER (FIXED LAYOUT) --- */
+        /* --- CHAT HEADER --- */
         .chat-header {
             background: var(--brand-dark); 
             color: white;
             height: 70px; 
             padding: 0 1rem;
             
-            /* Flexbox Layout */
             display: flex;
             justify-content: space-between;
             align-items: center; 
@@ -127,47 +131,41 @@
             font-size: 16px; 
             flex-shrink: 0; 
             border-bottom: 1px solid #1e293b; 
-            
-            /* Safety: Ensure container is full width */
             width: 100%;
         }
 
-        /* LOGO & TEXT AREA (Flexible) */
+        /* LOGO & TEXT AREA */
         .header-branding {
             display: flex;
             align-items: center;
             gap: 10px;
             height: 100%;
-            
-            /* CRITICAL FIX: Allow this section to shrink if needed */
+            /* Allow branding to take available space */
             flex: 1;
-            min-width: 0; 
-            overflow: hidden;
+            min-width: 0; /* Allows text truncation */
+            padding-right: 5px;
         }
 
         .header-logo-img {
             height: 32px; 
             width: auto;
-            flex-shrink: 0; /* Logo stays fixed size */
+            flex-shrink: 0; 
         }
         
+        /* TEXT WRAPPING FIX */
         .header-branding span {
-            /* Truncate text if it gets too tight (e.g. "Apex Auto...") */
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: nowrap;      /* Force single line */
+            overflow: hidden;         /* Hide overflow */
+            text-overflow: ellipsis;  /* Add ... if too long */
         }
 
-        /* BUTTONS AREA (Fixed) */
+        /* BUTTONS AREA */
         .header-actions { 
             display: flex; 
             align-items: center; 
-            gap: 4px; 
+            gap: 2px; /* Tight gap */
             height: 100%;
-            
-            /* CRITICAL FIX: Buttons must NEVER shrink */
-            flex-shrink: 0; 
-            margin-left: 10px;
+            flex-shrink: 0; /* Never shrink buttons */
         }
 
         /* --- BUTTONS --- */
@@ -349,7 +347,9 @@
 
         function launchChatCTA() {
             const wrapper = document.getElementById('chatWrapper');
+            // Add 'visible' class to slide it in from the right
             wrapper.classList.add('visible');
+            
              if(embeddedservice_bootstrap.utilAPI) {
                 embeddedservice_bootstrap.utilAPI.launchChat();
             }
