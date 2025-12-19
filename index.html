@@ -355,13 +355,13 @@
         window.addEventListener('message', (event) => {
             console.log('message',event);
             // Filter to relevant origins if possible, or just log safely
-            if (event.origin && event.origin.includes('salesforce')) {
+            if (event.origin && event.origin.includes('https://storm-555fc987410410.my.site.com')) {
                 // Check for web_storage event type
                 if (event.data && event.data.type === 'web_storage') {
                     
                     // --- SPECIFIC CONSOLE LOG FOR JWT ---
-                    if (event.data.payload && event.data.payload.jwt) {
-                        currentJwt = event.data.payload.jwt;
+                    if (event.data.payload && event.data.payload) {
+                        currentJwt = event.data.payload;
                         console.log(">> Listener caught JWT:", currentJwt);
                     }
                 }
