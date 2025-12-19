@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Automotive | Agentforce Assistant</title>
+    <style>
+        /* --- BRANDING & RESET --- */
+        :root {
+            --brand-primary: #0047AB; /* Deep Cobalt Blue */
+            --brand-accent: #00C2FF; /* Electric Blue */
+            --brand-dark: #0f172a;    /* Dark Slate */
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column; /* Changed to simple column layout */
+            overflow: hidden; 
+        }
+
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; 
+            position: relative;
+            width: 100%;
+        }
+
+        header.global-header {
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--brand-accent); }
+
+        .content-panel {
+            padding: 4rem;
+            max-width: 900px;
+            margin: 0 auto; /* Centered content */
+            width: 100%;
+        }
+
+        h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
+        p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
+
+        /* --- CTA BUTTON --- */
+        .cta-btn {
+            background-color: var(--brand-accent);
+            color: var(--brand-dark);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 700;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+        }
+
+        .cta-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 194, 255, 0.3);
+            background-color: #33cfff;
+        }
+
+        /* The OOTB widget handles its own styling, so no extra CSS needed here */
+
+    </style>
+</head>
+<body>
+
+    <div class="main-content">
+        <header class="global-header">
+            <div class="logo">APEX <span>AUTOMOTIVE</span></div>
+            <div style="font-size: 0.9rem; color: #94a3b8;">Agentforce Demo</div>
+        </header>
+
+        <div class="content-panel">
+            <h1>Experience the<br>Future of Driving.</h1>
+            <p class="subtitle">Click Launch Chat to talk with our agent.</p>
+            
+            <button class="cta-btn" onclick="launchChatCTA()">
+                <span>Launch Chat</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script type='text/javascript'>
+        
+        // --- 1. OPEN CHAT LOGIC ---
+        function launchChatCTA() {
+             if(embeddedservice_bootstrap.utilAPI) {
+                // Triggers the standard Salesforce popup
+                embeddedservice_bootstrap.utilAPI.launchChat();
+            } else {
+                console.warn("Salesforce Chat is not yet loaded.");
+            }
+        }
+
+        // --- SALESFORCE INIT ---
+        function initEmbeddedMessaging() {
+            try {
+                embeddedservice_bootstrap.settings.language = 'en_US'; 
+                
+                // REMOVED: displayMode = 'inline' 
+                // REMOVED: targetElement
+                // REMOVED: headerEnabled = false
+
+                embeddedservice_bootstrap.init(
+                    '00DIc000000HJCl',
+                    'MRI_Sales_Chat_V2',
+                    'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878',
+                    {
+                        scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
+                    }
+                );
+            } catch (err) {
+                console.error('Error loading Embedded Messaging: ', err);
+            }
+        };
+    </script>
+    <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+</body>
+</html>
