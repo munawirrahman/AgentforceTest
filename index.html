@@ -7,12 +7,12 @@
     <style>
         /* --- BRANDING & RESET --- */
         :root {
-            --brand-primary: #0047AB;
+            --brand-primary: #0047AB; /* Deep Cobalt Blue */
             --brand-accent: #00C2FF; /* Electric Blue */
             --text-light: #f8fafc;
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             --chat-width-normal: 380px;
-            --chat-width-expanded: 50vw; /* Expands to 50% of screen */
+            --chat-width-expanded: 50vw; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
@@ -22,13 +22,13 @@
             color: var(--text-light);
             height: 100vh;
             display: flex;
-            flex-direction: row; /* Side-by-Side Layout */
+            flex-direction: row; /* Layout: Content Left | Chat Right */
             overflow: hidden; 
         }
 
-        /* --- 1. LEFT COLUMN: MAIN CONTENT (Fills Space) --- */
+        /* --- 1. LEFT COLUMN: MAIN CONTENT --- */
         .main-content {
-            flex: 1; /* Grow to fill available space */
+            flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto; 
@@ -53,25 +53,22 @@
         h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
         p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
 
-        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR (Fixed/Expandable) --- */
+        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
         .chat-wrapper {
             background: #fff; 
             width: var(--chat-width-normal);
-            height: 100vh; /* Full Height */
+            height: 100vh; 
             display: flex;       
             flex-direction: column; 
             position: relative;
             z-index: 50;
             
-            /* UPDATED: Border on Left, Shadow on Left */
             border-left: 1px solid #333;
             box-shadow: -5px 0 30px rgba(0,0,0,0.3);
             
-            /* Smooth Expansion Animation */
             transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* The class we toggle with JS */
         .chat-wrapper.expanded {
             width: var(--chat-width-expanded);
         }
@@ -86,11 +83,12 @@
             align-items: center;
             font-weight: 600;
             font-size: 1rem;
-            border-bottom: 1px solid #eee;
             flex-shrink: 0; 
+            /* Removed bottom border to blend with banner if needed, 
+               or kept subtle if banner is different color */
+            border-bottom: 1px solid rgba(255,255,255,0.1); 
         }
 
-        /* Header Icons Container */
         .header-actions { display: flex; gap: 10px; }
 
         .icon-btn {
@@ -109,10 +107,19 @@
         }
         .icon-btn:hover { background: rgba(255,255,255,0.3); }
 
-        /* PRIVACY BANNER */
+        /* Icon Switching Logic */
+        .icon-btn .icon-collapse { display: none; } /* Hidden by default */
+        .icon-btn .icon-expand { display: block; }  /* Shown by default */
+
+        /* When expanded, flip visibility */
+        .chat-wrapper.expanded .icon-collapse { display: block; }
+        .chat-wrapper.expanded .icon-expand { display: none; }
+
+
+        /* --- DISCLAIMER BANNER --- */
         .privacy-banner {
-            background-color: var(--brand-accent);
-            color: #0f172a;
+            background-color: var(--brand-accent); /* Electric Blue */
+            color: #0f172a; /* Dark Text */
             padding: 0.6rem 1rem;
             font-size: 0.8rem;
             font-weight: 600;
@@ -121,7 +128,11 @@
             align-items: center;
             position: relative;
             flex-shrink: 0;
+            /* Ensure it sits perfectly under header */
+            margin-top: 0; 
+            z-index: 40;
         }
+        
         .banner-close-btn {
             background: transparent;
             border: none;
@@ -132,7 +143,9 @@
             right: 10px;
             opacity: 0.6;
         }
+        .banner-close-btn:hover { opacity: 1; }
 
+        /* --- TARGET AREA --- */
         #salesforce-chat-target {
             position: relative;
             flex: 1; 
@@ -140,8 +153,7 @@
             background-color: #f3f4f6;
         }
 
-        /* Icon SVG styling */
-        .icon-svg { width: 16px; height: 16px; fill: currentColor; }
+        .icon-svg { width: 18px; height: 18px; fill: currentColor; }
 
     </style>
 </head>
@@ -155,12 +167,7 @@
 
         <div class="content-panel">
             <h1>Experience the<br>Future of Driving.</h1>
-            <p class="subtitle">Your personal concierge is ready on the right to help you configure your Model X.</p>
-            
-            <div style="margin-top:2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                <h3>Model X - 2025 Edition</h3>
-                <p style="color:#aaa;">Starting at $79,900</p>
-            </div>
+            <p class="subtitle">Your personal concierge is ready on the right.</p>
         </div>
     </div>
 
@@ -169,15 +176,20 @@
         <div class="chat-header">
             <span>MRI Sales Agent</span>
             <div class="header-actions">
-                <button class="icon-btn" onclick="toggleChatExpand()" title="Expand/Collapse">
-                    <svg id="expand-icon" class="icon-svg" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
+                <button class="icon-btn" onclick="toggleChatExpand()" title="Toggle View">
+                    
+                    <svg class="icon-svg icon-expand" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
+                    
+                    <svg class="icon-svg icon-collapse" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>
+
                 </button>
+
                 <button class="icon-btn" onclick="handleChatClose()" title="Close Session">×</button>
             </div>
         </div>
 
         <div class="privacy-banner" id="privacyBanner">
-            <span>Session monitored for quality assurance.</span>
+            <span>Disclaimer: Responses are generated by AI and may vary.</span>
             <button class="banner-close-btn" onclick="closePrivacyBanner()">×</button>
         </div>
 
@@ -187,13 +199,13 @@
     <script type='text/javascript'>
         
         // --- UI FUNCTIONS ---
-        
-        // 1. Expand / Collapse Logic
         let isExpanded = false;
+
         function toggleChatExpand() {
             const wrapper = document.getElementById('chatWrapper');
             isExpanded = !isExpanded;
             
+            // Toggle class on wrapper; CSS handles the width transition & icon swap
             if (isExpanded) {
                 wrapper.classList.add('expanded');
             } else {
@@ -207,7 +219,6 @@
         }
 
         function handleChatClose() {
-            console.log("Close session clicked");
             if(embeddedservice_bootstrap.utilAPI) {
                 embeddedservice_bootstrap.utilAPI.clearSession();
             }
