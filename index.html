@@ -22,7 +22,7 @@
             color: var(--text-light);
             height: 100vh;
             display: flex;
-            flex-direction: row; /* Layout: Content Left | Chat Right */
+            flex-direction: row; 
             overflow: hidden; 
         }
 
@@ -84,15 +84,26 @@
             font-weight: 600;
             font-size: 1rem;
             flex-shrink: 0; 
-            /* Removed bottom border to blend with banner if needed, 
-               or kept subtle if banner is different color */
             border-bottom: 1px solid rgba(255,255,255,0.1); 
         }
 
-        .header-actions { display: flex; gap: 10px; }
+        /* Logo & Text Container */
+        .header-branding {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo-img {
+            height: 32px; /* Adjust size as needed */
+            width: auto;
+            display: block;
+        }
+
+        .header-actions { display: flex; gap: 5px; }
 
         .icon-btn {
-            background: rgba(255,255,255,0.15);
+            background: transparent; /* UPDATED: Removed background */
             border: none;
             color: white;
             width: 32px;
@@ -105,21 +116,21 @@
             transition: all 0.2s;
             font-size: 1rem;
         }
-        .icon-btn:hover { background: rgba(255,255,255,0.3); }
+        /* Only show background on hover */
+        .icon-btn:hover { background: rgba(255,255,255,0.1); }
 
         /* Icon Switching Logic */
-        .icon-btn .icon-collapse { display: none; } /* Hidden by default */
-        .icon-btn .icon-expand { display: block; }  /* Shown by default */
+        .icon-btn .icon-collapse { display: none; } 
+        .icon-btn .icon-expand { display: block; }  
 
-        /* When expanded, flip visibility */
         .chat-wrapper.expanded .icon-collapse { display: block; }
         .chat-wrapper.expanded .icon-expand { display: none; }
 
 
         /* --- DISCLAIMER BANNER --- */
         .privacy-banner {
-            background-color: var(--brand-accent); /* Electric Blue */
-            color: #0f172a; /* Dark Text */
+            background-color: var(--brand-accent); 
+            color: #0f172a; 
             padding: 0.6rem 1rem;
             font-size: 0.8rem;
             font-weight: 600;
@@ -128,7 +139,6 @@
             align-items: center;
             position: relative;
             flex-shrink: 0;
-            /* Ensure it sits perfectly under header */
             margin-top: 0; 
             z-index: 40;
         }
@@ -174,14 +184,15 @@
     <div class="chat-wrapper" id="chatWrapper">
         
         <div class="chat-header">
-            <span>MRI Sales Agent</span>
+            <div class="header-branding">
+                <img src="https://munawirrahman.github.io/AgentforceTest/logo.png" alt="MRI Logo" class="header-logo-img">
+                <span>MRI Sales Agent</span>
+            </div>
+            
             <div class="header-actions">
                 <button class="icon-btn" onclick="toggleChatExpand()" title="Toggle View">
-                    
                     <svg class="icon-svg icon-expand" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
-                    
                     <svg class="icon-svg icon-collapse" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>
-
                 </button>
 
                 <button class="icon-btn" onclick="handleChatClose()" title="Close Session">×</button>
@@ -205,7 +216,6 @@
             const wrapper = document.getElementById('chatWrapper');
             isExpanded = !isExpanded;
             
-            // Toggle class on wrapper; CSS handles the width transition & icon swap
             if (isExpanded) {
                 wrapper.classList.add('expanded');
             } else {
@@ -219,9 +229,7 @@
         }
 
         function handleChatClose() {
-            if(embeddedservice_bootstrap.utilAPI) {
-                embeddedservice_bootstrap.utilAPI.clearSession();
-            }
+            console.log('close chat');
         }
 
         // --- SALESFORCE INIT ---
