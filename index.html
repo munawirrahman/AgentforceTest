@@ -369,19 +369,13 @@
         });
 
         // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
-        window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
-            console.log('onEmbeddedMessagingConversationStarted',event);
-            if (event.detail && event.detail.conversationId) {
-                currentConversationId = event.detail.conversationId;
-                
-                // --- SPECIFIC CONSOLE LOG FOR CONVERSATION ID ---
-                console.log(">> Listener caught Conversation ID:", currentConversationId);
-            }
+        window.addEventListener('onEmbeddedMessagingConversationParticipantChanged', (event) => {
+            console.log('onEmbeddedMessagingConversationParticipantChanged',event);
         });
 
         // --- 3. READY LISTENER ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
-            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
+            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.", event);
             const btn = document.getElementById('launchChatBtn');
             if(btn) {
                 btn.removeAttribute('disabled');
