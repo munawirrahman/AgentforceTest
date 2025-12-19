@@ -486,15 +486,14 @@
                 wrapper.classList.add('visible');
                 toggle.classList.add('chat-open'); 
                 
-                // CRITICAL FIX: Ensure toggle also gets 'expanded' if wrapper is already expanded
+                // Ensure toggle also gets 'expanded' if wrapper is already expanded
                 if(wrapper.classList.contains('expanded')) {
                     toggle.classList.add('expanded');
                 }
             } else {
                 wrapper.classList.remove('visible');
-                // When hiding, we remove 'chat-open' from toggle so it snaps to right edge
+                // When hiding, remove positioning classes from toggle so it snaps back to right
                 toggle.classList.remove('chat-open');
-                // Remove 'expanded' from toggle only (keep chat wrapper state or reset depending on preference)
                 toggle.classList.remove('expanded');
             }
         }
@@ -533,24 +532,9 @@
         }
 
         function handleChatClose() {
-            console.log("--- Closing Chat (Resetting UI) ---");
+            console.log("--- Closing Chat & Refreshing ---");
             
-            // 1. Hide Chat UI
-            const wrapper = document.getElementById('chatWrapper');
-            wrapper.classList.remove('visible');
-            wrapper.classList.remove('expanded');
-            isExpanded = false;
-
-            // 2. Hide Sidebar Toggle (Reset to hidden state)
-            const toggle = document.getElementById('sidebarToggle');
-            toggle.classList.remove('active');
-            toggle.classList.remove('chat-open');
-            toggle.classList.remove('expanded');
-
-            // 3. Re-enable Launch Button
-            document.getElementById('launchChatBtn').disabled = false;
-
-            // 4. API Delete Logic
+            // 1. Trigger API Delete
             if (currentConversationId && currentJwt) {
                 const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
                 
@@ -562,16 +546,18 @@
                     }
                 })
                 .then(response => {
-                    if (response.ok) {
-                        console.log("✅ API SUCCESS: Conversation deleted.");
-                        currentConversationId = null; 
-                    } else {
-                        console.error("❌ API ERROR: Failed to delete. Status:", response.status);
-                    }
+                    console.log("✅ API Request Complete. Status:", response.status);
+                    // 2. RELOAD THE PAGE
+                    window.location.reload();
                 })
-                .catch(err => console.error("❌ NETWORK ERROR:", err));
+                .catch(err => {
+                    console.error("❌ NETWORK ERROR:", err);
+                    // Reload anyway to ensure state reset even if API fails
+                    window.location.reload();
+                });
             } else {
-                console.warn("⚠️ SKIPPING DELETE: Missing Conversation ID or JWT.");
+                console.warn("⚠️ Missing ID/JWT. Reloading immediately.");
+                window.location.reload();
             }
         }
 
