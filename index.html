@@ -509,6 +509,7 @@
 
                 console.log("[DEBUG] Calling embeddedservice_bootstrap.init()...");
                 
+                // FIXED: Removed .then() because init() does not return a Promise here
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
@@ -516,11 +517,10 @@
                     {
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
-                ).then(() => {
-                    console.log("[DEBUG] .init() Promise Resolved successfully.");
-                }).catch((error) => {
-                    console.error("[DEBUG] .init() Promise Rejected. Error:", error);
-                });
+                );
+                
+                console.log("[DEBUG] embeddedservice_bootstrap.init() executed successfully.");
+                console.log("[DEBUG] Waiting for 'onEmbeddedMessagingReady' event to enable button...");
 
             } catch (err) {
                 console.error('[DEBUG] Exception in initEmbeddedMessaging:', err);
