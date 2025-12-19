@@ -90,7 +90,7 @@
             border-left: 0; /* No border when hidden */
             
             height: 100vh; 
-            display: flex;       
+            display: flex;        
             flex-direction: column; 
             position: relative;
             z-index: 50;
@@ -118,7 +118,7 @@
             background: var(--brand-dark); 
             color: white;
             height: 70px; 
-            padding: 0 1.2rem;
+            padding: 0 1rem; /* Slightly reduced padding to save space */
             display: flex;
             justify-content: space-between;
             align-items: center; 
@@ -127,16 +127,27 @@
             flex-shrink: 0; 
             border-bottom: 1px solid #1e293b; 
             
-            /* Ensure header doesn't wrap/break during animation */
+            /* FIXED: Replaced min-width with 100% width handling */
             white-space: nowrap; 
-            min-width: 380px; /* Forces layout stability */
+            width: 100%;
         }
 
         .header-branding {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             height: 100%;
+            /* FIXED: Allow branding to shrink if needed so buttons stay visible */
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+
+        .header-branding span {
+            /* FIXED: Truncate text with ellipsis if it's too long */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .header-logo-img {
@@ -144,13 +155,16 @@
             width: auto;
             display: block;
             object-fit: contain;
+            flex-shrink: 0;
         }
 
         .header-actions { 
             display: flex; 
             align-items: center; 
-            gap: 8px; 
+            gap: 4px; /* Reduced gap slightly */
             height: 100%;
+            /* FIXED: Prevent buttons from shrinking */
+            flex-shrink: 0;
         }
 
         /* --- BUTTONS --- */
@@ -252,7 +266,8 @@
             flex-shrink: 0;
             z-index: 40;
             letter-spacing: 0.3px;
-            min-width: 380px; /* Prevent wrapping during animation */
+            /* FIXED: Removed min-width 380px to allow fitting in container */
+            width: 100%;
         }
         
         .banner-close-btn {
@@ -280,7 +295,7 @@
             flex: 1; 
             width: 100%;
             background-color: #f3f4f6;
-            min-width: 380px; /* Prevent iframe collapse during animation */
+            /* FIXED: Removed fixed min-width to prevent overflow */
         }
 
     </style>
