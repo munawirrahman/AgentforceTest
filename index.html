@@ -79,14 +79,11 @@
         .chat-header {
             background: var(--brand-dark); 
             color: white;
-            
             height: 70px; 
             padding: 0 1.2rem;
-            
             display: flex;
             justify-content: space-between;
             align-items: center; 
-            
             font-weight: 700;
             font-size: 1.1rem;
             flex-shrink: 0; 
@@ -114,7 +111,7 @@
             height: 100%;
         }
 
-        /* --- BIGGER BUTTONS --- */
+        /* --- BUTTONS --- */
         .icon-btn {
             background: transparent; 
             border: none;
@@ -127,20 +124,68 @@
             align-items: center;
             justify-content: center; 
             transition: all 0.2s ease;
+            position: relative; /* For dropdown positioning */
         }
         
-        .icon-btn:hover { 
+        .icon-btn:hover, .icon-btn.active { 
             background: rgba(255,255,255,0.1); 
             color: white;
         }
 
-        /* --- BIGGER ICONS --- */
         .icon-svg { 
             width: 24px; 
             height: 24px; 
             fill: currentColor; 
         }
 
+        /* --- DROPDOWN MENU --- */
+        .menu-container {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            position: absolute;
+            top: 120%; /* Push it down below the button */
+            right: 0;
+            width: 200px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            padding: 8px 0;
+            display: none; /* Hidden by default */
+            z-index: 100;
+            border: 1px solid #e2e8f0;
+            transform-origin: top right;
+            animation: fadeIn 0.15s ease-out;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+        }
+
+        .menu-item {
+            padding: 10px 16px;
+            color: #334155;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.1s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background: #f1f5f9;
+            color: var(--brand-primary);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Expand Logic */
         .icon-btn .icon-collapse { display: none; } 
         .icon-btn .icon-expand { display: block; }  
         .chat-wrapper.expanded .icon-collapse { display: block; }
@@ -218,10 +263,24 @@
             </div>
             
             <div class="header-actions">
+                
                 <button class="icon-btn" onclick="toggleChatExpand()" title="Toggle View">
                     <svg class="icon-svg icon-expand" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
                     <svg class="icon-svg icon-collapse" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>
                 </button>
+
+                <div class="menu-container">
+                    <button class="icon-btn" id="menuBtn" onclick="toggleMenu()" title="More Options">
+                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                    </button>
+                    <div class="dropdown-menu" id="headerDropdown">
+                        <div class="menu-item" onclick="handleMenuAction('Check Order Status')">📦 Check Order Status</div>
+                        <div class="menu-item" onclick="handleMenuAction('Request Test Drive')">🚗 Request Test Drive</div>
+                        <div class="menu-item" onclick="handleMenuAction('Speak to Agent')">🎧 Speak to Agent</div>
+                        <div style="height:1px; background:#e2e8f0; margin:5px 0;"></div>
+                        <div class="menu-item" onclick="handleMenuAction('Clear History')">🗑️ Clear History</div>
+                    </div>
+                </div>
 
                 <button class="icon-btn" onclick="handleChatClose()" title="Close Session">
                     <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
@@ -251,6 +310,37 @@
             } else {
                 wrapper.classList.remove('expanded');
             }
+        }
+
+        // --- MENU LOGIC ---
+        function toggleMenu() {
+            const menu = document.getElementById('headerDropdown');
+            const btn = document.getElementById('menuBtn');
+            menu.classList.toggle('show');
+            btn.classList.toggle('active');
+        }
+
+        // Close menu if clicking outside
+        window.onclick = function(event) {
+            if (!event.target.closest('.menu-container')) {
+                const menu = document.getElementById('headerDropdown');
+                const btn = document.getElementById('menuBtn');
+                if (menu.classList.contains('show')) {
+                    menu.classList.remove('show');
+                    btn.classList.remove('active');
+                }
+            }
+        }
+
+        function handleMenuAction(utterance) {
+            console.log("Menu Selection:", utterance);
+            // Hide menu after selection
+            document.getElementById('headerDropdown').classList.remove('show');
+            
+            // NOTE: Salesforce MIAW/Agentforce does NOT allow programmatically sending text 
+            // from the parent window into the chat stream for security reasons.
+            // We can only Log it, or use it to trigger local logic.
+            alert("Action Triggered: " + utterance + "\n(Check Console for Log)");
         }
 
         function closePrivacyBanner() {
