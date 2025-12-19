@@ -379,14 +379,12 @@
 
         // --- 3. UI LOGIC ---
         function launchChatCTA() {
-            console.log("[DEBUG] Launch Chat clicked.");
+            console.log("[DEBUG] Launch Chat clicked (Sidebar open only).");
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.add('visible');
-             if(embeddedservice_bootstrap.utilAPI) {
-                embeddedservice_bootstrap.utilAPI.launchChat();
-            } else {
-                console.error("[DEBUG] Error: embeddedservice_bootstrap.utilAPI is not available.");
-            }
+            
+            // REMOVED: embeddedservice_bootstrap.utilAPI.launchChat();
+            // Since mode is 'inline', it should already be rendered in the target div.
         }
 
         function handleChatClose() {
