@@ -79,15 +79,22 @@
             background-color: #33cfff;
         }
 
-        /* --- 2. SIDEBAR TOGGLE BUTTON (NEW) --- */
+        /* --- 2. SIDEBAR TOGGLE BUTTON (UPDATED) --- */
         .sidebar-toggle {
+            /* Hidden by default until chat launches */
+            display: none; 
+            
             position: absolute;
             top: 50%;
-            right: 0; /* Default: Stick to right edge */
+            right: 0; 
             transform: translateY(-50%);
-            z-index: 60; /* Above chat wrapper */
-            width: 24px;
-            height: 60px;
+            z-index: 60; 
+            
+            /* Sizing */
+            width: 40px; 
+            min-height: 60px;
+            padding: 10px 0;
+
             background: var(--brand-dark);
             color: white;
             border: 1px solid #1e293b;
@@ -95,10 +102,18 @@
             border-radius: 8px 0 0 8px;
             cursor: pointer;
             transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            display: flex;
+            
+            /* Layout for vertical text */
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 10px;
             box-shadow: -2px 0 10px rgba(0,0,0,0.2);
+        }
+
+        /* Active class added via JS to reveal it */
+        .sidebar-toggle.active {
+            display: flex;
         }
 
         .sidebar-toggle:hover {
@@ -106,17 +121,38 @@
             color: var(--brand-accent);
         }
 
-        /* State: Open (Moved left by chat width) */
+        /* Text Styling (Vertical Mode) */
+        .sidebar-toggle .toggle-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            margin-bottom: 5px;
+        }
+
+        /* STATE: Chat is OPEN (Button moves left) */
         .sidebar-toggle.chat-open {
             right: var(--chat-width-normal);
         }
         
-        /* State: Expanded (Moved left by expanded width) */
         .sidebar-toggle.chat-open.expanded {
             right: var(--chat-width-expanded);
         }
 
-        /* Icon handling */
+        /* Hide text when chat is OPEN to keep it clean */
+        .sidebar-toggle.chat-open .toggle-text {
+            display: none;
+        }
+        
+        /* Adjust height when no text is shown */
+        .sidebar-toggle.chat-open {
+            min-height: 40px; 
+            height: 60px;
+        }
+
+        /* Icon Switching */
         .sidebar-toggle .icon-maximize { display: block; }
         .sidebar-toggle .icon-minimize { display: none; }
 
@@ -345,6 +381,7 @@
 
     <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarState()" title="Minimize/Maximize Chat">
         <svg class="icon-svg icon-maximize" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        <span class="toggle-text">Continue Chatting</span>
         <svg class="icon-svg icon-minimize" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
     </button>
 
@@ -393,7 +430,7 @@
         let currentJwt = null;
         let currentConversationId = null;
 
-        // --- 1. DEBUG: CATCH-ALL MESSAGE LISTENER (To find the JWT) ---
+        // --- 1. DEBUG: CATCH-ALL MESSAGE LISTENER ---
         window.addEventListener('message', (event) => {
             if (event.origin && event.origin.includes('https://storm-555fc987410410.my.site.com')) {
                 if (event.data && event.data.type === 'web_storage') {
@@ -405,7 +442,7 @@
             }
         });
 
-        // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
+        // --- 2. DEBUG: CONVERSATION LISTENER ---
         window.addEventListener('onEmbeddedMessagingConversationParticipantChanged', (event) => {
             if (event.detail && event.detail.conversationId) {
                 currentConversationId = event.detail.conversationId;
@@ -436,12 +473,10 @@
             
             if (isVisible) {
                 wrapper.classList.add('visible');
-                toggle.classList.add('chat-open'); // Moves toggle to left of chat
+                toggle.classList.add('chat-open'); 
             } else {
                 wrapper.classList.remove('visible');
-                // Note: We leave 'expanded' class alone or remove it? Usually good to reset.
-                // wrapper.classList.remove('expanded'); 
-                toggle.classList.remove('chat-open'); // Moves toggle back to right edge
+                toggle.classList.remove('chat-open');
                 toggle.classList.remove('expanded');
             }
         }
@@ -450,6 +485,9 @@
             console.log("[DEBUG] Launch Chat clicked.");
             updateSidebarState(true);
             
+            // REVEAL SIDE BUTTON
+            document.getElementById('sidebarToggle').classList.add('active');
+            
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction detected. Initializing Embedded Messaging...");
                 initEmbeddedMessaging();
@@ -457,26 +495,23 @@
             }
         }
         
-        // NEW: Toggle function for the side button
+        // Toggle function for the side button
         function toggleSidebarState() {
             const wrapper = document.getElementById('chatWrapper');
-            // Check if currently visible
             const isVisible = wrapper.classList.contains('visible');
             
             if (isVisible) {
-                // Currently open -> Minimize it
                 updateSidebarState(false);
             } else {
-                // Currently closed -> Open/Maximize it
-                launchChatCTA(); // Re-use launch logic
+                launchChatCTA(); 
             }
         }
 
         function handleChatClose() {
             console.log("--- End Chat Session (UI remains open) ---");
-            console.log("Current Conversation ID:", currentConversationId);
-            console.log("Current JWT:", currentJwt ? "Exists" : "Missing");
-
+            // NOTE: We do NOT close the UI here anymore per request.
+            // If you want to visually close it too, uncomment updateSidebarState(false);
+            
             if (currentConversationId && currentJwt) {
                 const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
                 
