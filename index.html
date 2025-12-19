@@ -66,7 +66,7 @@
             font-weight: 700;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; 
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s, background-color 0.2s; 
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -79,7 +79,17 @@
             background-color: #33cfff;
         }
 
-        /* --- 2. SIDEBAR TOGGLE BUTTON (UPDATED) --- */
+        .cta-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none; 
+            box-shadow: none;
+            transform: none;
+            background-color: #475569; 
+            color: #94a3b8;
+        }
+
+        /* --- 2. SIDEBAR TOGGLE BUTTON --- */
         .sidebar-toggle {
             /* Hidden by default until chat launches */
             display: none; 
@@ -88,7 +98,7 @@
             top: 50%;
             right: 0; 
             transform: translateY(-50%);
-            z-index: 60; 
+            z-index: 60; /* Must be higher than chat wrapper */
             
             /* Sizing */
             width: 40px; 
@@ -137,6 +147,7 @@
             right: var(--chat-width-normal);
         }
         
+        /* STATE: Chat is EXPANDED (Button moves further left) */
         .sidebar-toggle.chat-open.expanded {
             right: var(--chat-width-expanded);
         }
@@ -304,7 +315,7 @@
             to { opacity: 1; transform: scale(1); }
         }
 
-        /* Expand Logic */
+        /* Expand Logic for Icons */
         .icon-btn .icon-collapse { display: none; } 
         .icon-btn .icon-expand { display: block; }  
         .chat-wrapper.expanded .icon-collapse { display: block; }
@@ -474,20 +485,33 @@
             if (isVisible) {
                 wrapper.classList.add('visible');
                 toggle.classList.add('chat-open'); 
+                
+                // CRITICAL FIX: Ensure toggle also gets 'expanded' if wrapper is already expanded
+                if(wrapper.classList.contains('expanded')) {
+                    toggle.classList.add('expanded');
+                }
             } else {
                 wrapper.classList.remove('visible');
+                // When hiding, we remove 'chat-open' from toggle so it snaps to right edge
                 toggle.classList.remove('chat-open');
+                // Remove 'expanded' from toggle only (keep chat wrapper state or reset depending on preference)
                 toggle.classList.remove('expanded');
             }
         }
 
         function launchChatCTA() {
             console.log("[DEBUG] Launch Chat clicked.");
+            
+            // 1. Disable the Launch Button
+            document.getElementById('launchChatBtn').disabled = true;
+
+            // 2. Open Sidebar UI
             updateSidebarState(true);
             
-            // REVEAL SIDE BUTTON
+            // 3. Reveal Side Toggle
             document.getElementById('sidebarToggle').classList.add('active');
             
+            // 4. Init if needed
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction detected. Initializing Embedded Messaging...");
                 initEmbeddedMessaging();
@@ -503,15 +527,30 @@
             if (isVisible) {
                 updateSidebarState(false);
             } else {
-                launchChatCTA(); 
+                // If opening via side button, just ensure UI is visible
+                updateSidebarState(true);
             }
         }
 
         function handleChatClose() {
-            console.log("--- End Chat Session (UI remains open) ---");
-            // NOTE: We do NOT close the UI here anymore per request.
-            // If you want to visually close it too, uncomment updateSidebarState(false);
+            console.log("--- Closing Chat (Resetting UI) ---");
             
+            // 1. Hide Chat UI
+            const wrapper = document.getElementById('chatWrapper');
+            wrapper.classList.remove('visible');
+            wrapper.classList.remove('expanded');
+            isExpanded = false;
+
+            // 2. Hide Sidebar Toggle (Reset to hidden state)
+            const toggle = document.getElementById('sidebarToggle');
+            toggle.classList.remove('active');
+            toggle.classList.remove('chat-open');
+            toggle.classList.remove('expanded');
+
+            // 3. Re-enable Launch Button
+            document.getElementById('launchChatBtn').disabled = false;
+
+            // 4. API Delete Logic
             if (currentConversationId && currentJwt) {
                 const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
                 
@@ -543,10 +582,10 @@
             isExpanded = !isExpanded;
             if (isExpanded) {
                 wrapper.classList.add('expanded');
-                toggle.classList.add('expanded');
+                toggle.classList.add('expanded'); // Move button to 50vw
             } else {
                 wrapper.classList.remove('expanded');
-                toggle.classList.remove('expanded');
+                toggle.classList.remove('expanded'); // Move button back to 380px
             }
         }
 
