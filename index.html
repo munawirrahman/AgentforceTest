@@ -105,17 +105,13 @@
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER (UPDATED FOR WRAPPING) --- */
+        /* --- CHAT HEADER (Text Wrap Version) --- */
         .chat-header {
             background: var(--brand-dark); 
             color: white;
-            /* CHANGE 1: Flexible height to fit wrapped text */
             min-height: 70px; 
-            height: auto;
-            
-            /* CHANGE 2: Add vertical padding for when it grows */
+            height: auto; /* Allow growth */
             padding: 10px 1rem; 
-            
             display: flex;
             justify-content: space-between;
             align-items: center; 
@@ -136,9 +132,8 @@
         }
 
         .header-branding span {
-            /* CHANGE 3: Allow text to wrap normally */
-            white-space: normal; 
-            line-height: 1.2; /* Tighter line height looks better when wrapped */
+            white-space: normal; /* Enable wrapping */
+            line-height: 1.2;
         }
 
         .header-logo-img {
@@ -147,7 +142,7 @@
             display: block;
             object-fit: contain;
             flex-shrink: 0;
-            align-self: center; /* Ensures logo stays centered if text wraps */
+            align-self: center;
         }
 
         .header-actions { 
@@ -156,8 +151,8 @@
             gap: 4px; 
             height: 100%;
             flex-shrink: 0;
-            align-self: flex-start; /* Optional: Aligns buttons to top if header gets very tall */
-            margin-top: 5px; /* Adjust based on alignment preference */
+            align-self: flex-start; 
+            margin-top: 5px;
         }
 
         /* --- BUTTONS --- */
@@ -322,6 +317,7 @@
                         <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
                     </button>
                     <div class="dropdown-menu" id="headerDropdown">
+                        <div class="menu-item" onclick="handleMenuAction('Recommend me a good car')">✨ Recommend a Car</div>
                         <div class="menu-item" onclick="handleMenuAction('Check Order Status')">📦 Check Order Status</div>
                         <div class="menu-item" onclick="handleMenuAction('Request Test Drive')">🚗 Request Test Drive</div>
                         <div class="menu-item" onclick="handleMenuAction('Speak to Human')">🎧 Speak to Human</div>
@@ -365,11 +361,9 @@
             wrapper.classList.remove('visible');
             wrapper.classList.remove('expanded'); // Reset expansion state
             isExpanded = false;
-
-            // Clear session (optional, depending on if you want to save history)
-            if(embeddedservice_bootstrap.utilAPI) {
-                embeddedservice_bootstrap.utilAPI.clearSession();
-            }
+            
+            // REMOVED: Session clear logic is gone. 
+            // The chat state will remain active in the background.
         }
 
         function toggleChatExpand() {
