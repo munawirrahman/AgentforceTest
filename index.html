@@ -331,7 +331,7 @@
                     </div>
                 </div>
 
-                <button class="icon-btn" onclick="handleChatClose()" title="Close Session">
+                <button class="icon-btn" onclick="handleChatClose()" title="End Conversation">
                     <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
             </div>
@@ -348,7 +348,7 @@
     <script type='text/javascript'>
         
         let isExpanded = false;
-        let isInitialized = false; // CHANGED: Flag to track init state
+        let isInitialized = false; 
         let currentJwt = null;
         let currentConversationId = null;
 
@@ -375,7 +375,6 @@
         // --- 3. READY LISTENER ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
             console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
-            // We don't need to enable the button here anymore since it's enabled by default
         });
 
         // --- 4. MANUAL DEBUG HELPER ---
@@ -394,7 +393,6 @@
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.add('visible');
             
-            // CHANGED: Check if initialized. If not, run initEmbeddedMessaging.
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction detected. Initializing Embedded Messaging...");
                 initEmbeddedMessaging();
@@ -405,12 +403,13 @@
         }
 
         function handleChatClose() {
-            const wrapper = document.getElementById('chatWrapper');
-            wrapper.classList.remove('visible');
-            wrapper.classList.remove('expanded');
-            isExpanded = false;
+            // CHANGED: The UI closing logic is removed so the modal stays open
+            // const wrapper = document.getElementById('chatWrapper');
+            // wrapper.classList.remove('visible');
+            // wrapper.classList.remove('expanded');
+            // isExpanded = false;
 
-            console.log("--- Closing Chat ---");
+            console.log("--- End Chat Session (UI remains open) ---");
             console.log("Current Conversation ID:", currentConversationId);
             console.log("Current JWT:", currentJwt ? "Exists" : "Missing");
 
@@ -496,7 +495,6 @@
         // --- INIT LOGIC ---
         function onScriptLoaded() {
             console.log(`[DEBUG] Script loaded. Waiting for user interaction...`);
-            // CHANGED: Removed automatic init call here.
         }
 
         function initEmbeddedMessaging() {
