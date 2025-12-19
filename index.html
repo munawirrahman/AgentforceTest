@@ -79,26 +79,26 @@
             background-color: #33cfff;
         }
 
-        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR (HIDDEN BY DEFAULT) --- */
+        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
         .chat-wrapper {
             background: #fff; 
             
-            /* Hidden State */
+            /* Hidden by default */
             width: 0; 
             opacity: 0;
-            border-left: 0;
+            border-left: 0; 
             
             height: 100vh; 
             display: flex;       
             flex-direction: column; 
             position: relative;
             z-index: 50;
-            overflow: hidden; /* Important for animation */
+            overflow: hidden; 
             
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
 
-        /* Visible State */
+        /* VISIBLE STATE */
         .chat-wrapper.visible {
             width: var(--chat-width-normal);
             opacity: 1;
@@ -106,7 +106,7 @@
             box-shadow: -5px 0 30px rgba(0,0,0,0.3);
         }
 
-        /* Expanded State */
+        /* EXPANDED STATE */
         .chat-wrapper.visible.expanded {
             width: var(--chat-width-expanded);
         }
@@ -116,12 +116,11 @@
             background: var(--brand-dark); 
             color: white;
             height: 70px; 
-            
-            /* Use Padding to ensure content isn't flush against edge */
             padding: 0 1rem;
             
+            /* Flexbox Layout */
             display: flex;
-            justify-content: space-between; /* Pushes Branding Left, Actions Right */
+            justify-content: space-between;
             align-items: center; 
             
             font-weight: 700;
@@ -129,45 +128,45 @@
             flex-shrink: 0; 
             border-bottom: 1px solid #1e293b; 
             
-            /* CRITICAL FIX: Ensure it fills the parent width exactly */
+            /* Safety: Ensure container is full width */
             width: 100%;
-            box-sizing: border-box;
         }
 
+        /* LOGO & TEXT AREA (Flexible) */
         .header-branding {
             display: flex;
             align-items: center;
             gap: 10px;
             height: 100%;
             
-            /* CRITICAL FIX: Allow text to shrink/truncate if needed so buttons stay visible */
+            /* CRITICAL FIX: Allow this section to shrink if needed */
             flex: 1;
-            min-width: 0;
+            min-width: 0; 
             overflow: hidden;
-        }
-        
-        .header-branding span {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
         }
 
         .header-logo-img {
             height: 32px; 
             width: auto;
-            display: block;
-            object-fit: contain;
-            flex-shrink: 0; /* Logo shouldn't shrink */
+            flex-shrink: 0; /* Logo stays fixed size */
+        }
+        
+        .header-branding span {
+            /* Truncate text if it gets too tight (e.g. "Apex Auto...") */
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
+        /* BUTTONS AREA (Fixed) */
         .header-actions { 
             display: flex; 
             align-items: center; 
-            gap: 4px; /* Slightly tighter gap to save space */
+            gap: 4px; 
             height: 100%;
             
-            /* CRITICAL FIX: Ensure buttons NEVER shrink or disappear */
-            flex-shrink: 0;
+            /* CRITICAL FIX: Buttons must NEVER shrink */
+            flex-shrink: 0; 
             margin-left: 10px;
         }
 
@@ -207,7 +206,7 @@
             position: absolute;
             top: 110%; 
             right: 0;
-            width: 220px; 
+            width: 200px; 
             background: white;
             border-radius: 8px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
