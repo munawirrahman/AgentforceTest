@@ -353,6 +353,7 @@
 
         // --- 1. DEBUG: CATCH-ALL MESSAGE LISTENER (To find the JWT) ---
         window.addEventListener('message', (event) => {
+            console.log('message',event);
             // Filter to relevant origins if possible, or just log safely
             if (event.origin && event.origin.includes('salesforce')) {
                 // Check for web_storage event type
@@ -369,6 +370,7 @@
 
         // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
         window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
+            console.log('onEmbeddedMessagingConversationStarted',event);
             if (event.detail && event.detail.conversationId) {
                 currentConversationId = event.detail.conversationId;
                 
