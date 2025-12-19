@@ -103,6 +103,9 @@
     </div>
 
     <script type='text/javascript'>
+        window.addEventListener('onEmbeddedMessagingReady', (event) => {
+            embeddedservice_bootstrap.utilAPI.hideChatButton();
+        });
         
         // --- 1. OPEN CHAT LOGIC ---
         function launchChatCTA() {
@@ -131,7 +134,6 @@
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
                 );
-                embeddedservice_bootstrap.utilAPI.hideChatButton();
             } catch (err) {
                 console.error('Error loading Embedded Messaging: ', err);
             }
