@@ -66,7 +66,7 @@
             font-weight: 700;
             border-radius: 50px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; /* Added opacity transition */
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s; 
             display: inline-flex;
             align-items: center;
             gap: 10px;
@@ -79,14 +79,13 @@
             background-color: #33cfff;
         }
 
-        /* --- DISABLED STATE --- */
         .cta-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            pointer-events: none; /* Prevents clicks */
+            pointer-events: none; 
             box-shadow: none;
             transform: none;
-            background-color: #64748b; /* Grey out color */
+            background-color: #64748b; 
         }
 
         /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
@@ -309,13 +308,11 @@
     </div>
 
     <div class="chat-wrapper" id="chatWrapper">
-        
         <div class="chat-header">
             <div class="header-branding">
                 <img src="https://munawirrahman.github.io/AgentforceTest/logo.png" alt="MRI Logo" class="header-logo-img">
                 <span>Apex Automotive Agent</span>
             </div>
-            
             <div class="header-actions">
                 <button class="icon-btn" onclick="toggleChatExpand()" title="Toggle View">
                     <svg class="icon-svg icon-expand" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
@@ -359,19 +356,19 @@
             if (event.data && event.data.type === 'web_storage') {
                 if (event.data.payload && event.data.payload.jwt) {
                     currentJwt = event.data.payload.jwt;
-                    console.log("Captured JWT:", currentJwt);
+                    console.log("[DEBUG] Captured JWT:", currentJwt);
                 }
             }
         });
 
         window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
             currentConversationId = event.detail.conversationId;
-            console.log("Captured Conversation ID:", currentConversationId);
+            console.log("[DEBUG] Captured Conversation ID:", currentConversationId);
         });
 
         // --- 2. READY LISTENER (ENABLES BUTTON) ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
-            console.log("Salesforce Chat is READY. Enabling button...");
+            console.log("[DEBUG] Event Received: onEmbeddedMessagingReady. Enabling Launch Button.");
             const btn = document.getElementById('launchChatBtn');
             if(btn) {
                 btn.removeAttribute('disabled');
@@ -382,10 +379,13 @@
 
         // --- 3. UI LOGIC ---
         function launchChatCTA() {
+            console.log("[DEBUG] Launch Chat clicked.");
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.add('visible');
              if(embeddedservice_bootstrap.utilAPI) {
                 embeddedservice_bootstrap.utilAPI.launchChat();
+            } else {
+                console.error("[DEBUG] Error: embeddedservice_bootstrap.utilAPI is not available.");
             }
         }
 
@@ -397,7 +397,7 @@
 
             if (currentConversationId && currentJwt) {
                 const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
-                console.log("Deleting conversation...");
+                console.log("[DEBUG] Attempting to delete conversation:", currentConversationId);
 
                 fetch(url, {
                     method: 'DELETE',
@@ -408,13 +408,15 @@
                 })
                 .then(response => {
                     if (response.ok) {
-                        console.log("Conversation deleted successfully.");
+                        console.log("[DEBUG] Conversation deleted successfully.");
                         currentConversationId = null; 
                     } else {
-                        console.error("Failed to delete conversation:", response.status);
+                        console.error("[DEBUG] Failed to delete conversation. Status:", response.status);
                     }
                 })
-                .catch(err => console.error("API Error:", err));
+                .catch(err => console.error("[DEBUG] API Error during delete:", err));
+            } else {
+                console.warn("[DEBUG] Cannot delete conversation: Missing ID or JWT.");
             }
         }
 
@@ -461,9 +463,10 @@
             document.getElementById('menuBtn').classList.remove('active');
 
             if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
+                console.log("[DEBUG] Sending utterance:", utterance);
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance)
-                    .then(() => console.log("Sent: " + utterance))
-                    .catch((err) => console.error("Error:", err));
+                    .then(() => console.log("[DEBUG] Utterance sent successfully."))
+                    .catch((err) => console.error("[DEBUG] Error sending utterance:", err));
             }
         }
 
@@ -472,28 +475,40 @@
             if (banner) banner.style.display = 'none';
         }
 
-        // --- 4. SAFE INITIALIZATION ---
-        // This function is triggered by the Script Tag onload, BUT it waits for window.load
+        // --- 4. SAFE INITIALIZATION WITH DEBUGGING ---
+        
         function onScriptLoaded() {
-            console.log("Script loaded. Waiting for Page Load...");
+            console.log(`[DEBUG] Script onload fired. Document Ready State: ${document.readyState}`);
             
             // Check if page is already loaded
             if (document.readyState === 'complete') {
+                console.log("[DEBUG] Document already complete. Initializing immediately.");
                 initEmbeddedMessaging();
             } else {
-                // Wait for page to finish loading before initializing
-                window.addEventListener('load', initEmbeddedMessaging);
+                console.log("[DEBUG] Document not complete. Adding window.onload listener.");
+                window.addEventListener('load', () => {
+                    console.log("[DEBUG] Window onload fired. Initializing now.");
+                    initEmbeddedMessaging();
+                });
             }
         }
 
         function initEmbeddedMessaging() {
-            console.log("Initializing Embedded Messaging...");
+            console.log("[DEBUG] initEmbeddedMessaging called.");
+            
             try {
+                if (!window.embeddedservice_bootstrap) {
+                    console.error("[DEBUG] CRITICAL: embeddedservice_bootstrap is undefined!");
+                    return;
+                }
+
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.displayMode = 'inline';
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
                 embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
 
+                console.log("[DEBUG] Calling embeddedservice_bootstrap.init()...");
+                
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
@@ -501,9 +516,14 @@
                     {
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
-                );
+                ).then(() => {
+                    console.log("[DEBUG] .init() Promise Resolved successfully.");
+                }).catch((error) => {
+                    console.error("[DEBUG] .init() Promise Rejected. Error:", error);
+                });
+
             } catch (err) {
-                console.error('Error loading Embedded Messaging: ', err);
+                console.error('[DEBUG] Exception in initEmbeddedMessaging:', err);
             }
         };
     </script>
