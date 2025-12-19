@@ -79,16 +79,52 @@
             background-color: #33cfff;
         }
 
-        .cta-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            pointer-events: none; 
-            box-shadow: none;
-            transform: none;
-            background-color: #64748b; 
+        /* --- 2. SIDEBAR TOGGLE BUTTON (NEW) --- */
+        .sidebar-toggle {
+            position: absolute;
+            top: 50%;
+            right: 0; /* Default: Stick to right edge */
+            transform: translateY(-50%);
+            z-index: 60; /* Above chat wrapper */
+            width: 24px;
+            height: 60px;
+            background: var(--brand-dark);
+            color: white;
+            border: 1px solid #1e293b;
+            border-right: none;
+            border-radius: 8px 0 0 8px;
+            cursor: pointer;
+            transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.2);
         }
 
-        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR --- */
+        .sidebar-toggle:hover {
+            background: #1e293b;
+            color: var(--brand-accent);
+        }
+
+        /* State: Open (Moved left by chat width) */
+        .sidebar-toggle.chat-open {
+            right: var(--chat-width-normal);
+        }
+        
+        /* State: Expanded (Moved left by expanded width) */
+        .sidebar-toggle.chat-open.expanded {
+            right: var(--chat-width-expanded);
+        }
+
+        /* Icon handling */
+        .sidebar-toggle .icon-maximize { display: block; }
+        .sidebar-toggle .icon-minimize { display: none; }
+
+        .sidebar-toggle.chat-open .icon-maximize { display: none; }
+        .sidebar-toggle.chat-open .icon-minimize { display: block; }
+
+
+        /* --- 3. RIGHT COLUMN: CHAT SIDEBAR --- */
         .chat-wrapper {
             background: #fff; 
             width: 0; 
@@ -307,6 +343,11 @@
         </div>
     </div>
 
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarState()" title="Minimize/Maximize Chat">
+        <svg class="icon-svg icon-maximize" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+        <svg class="icon-svg icon-minimize" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+    </button>
+
     <div class="chat-wrapper" id="chatWrapper">
         <div class="chat-header">
             <div class="header-branding">
@@ -387,28 +428,51 @@
             });
         }
 
-        // --- UI LOGIC ---
+        // --- UI LOGIC: OPEN/CLOSE ---
+        
+        function updateSidebarState(isVisible) {
+            const wrapper = document.getElementById('chatWrapper');
+            const toggle = document.getElementById('sidebarToggle');
+            
+            if (isVisible) {
+                wrapper.classList.add('visible');
+                toggle.classList.add('chat-open'); // Moves toggle to left of chat
+            } else {
+                wrapper.classList.remove('visible');
+                // Note: We leave 'expanded' class alone or remove it? Usually good to reset.
+                // wrapper.classList.remove('expanded'); 
+                toggle.classList.remove('chat-open'); // Moves toggle back to right edge
+                toggle.classList.remove('expanded');
+            }
+        }
+
         function launchChatCTA() {
             console.log("[DEBUG] Launch Chat clicked.");
-            const wrapper = document.getElementById('chatWrapper');
-            wrapper.classList.add('visible');
+            updateSidebarState(true);
             
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction detected. Initializing Embedded Messaging...");
                 initEmbeddedMessaging();
                 isInitialized = true;
+            }
+        }
+        
+        // NEW: Toggle function for the side button
+        function toggleSidebarState() {
+            const wrapper = document.getElementById('chatWrapper');
+            // Check if currently visible
+            const isVisible = wrapper.classList.contains('visible');
+            
+            if (isVisible) {
+                // Currently open -> Minimize it
+                updateSidebarState(false);
             } else {
-                console.log("[DEBUG] Already initialized. Sidebar opened.");
+                // Currently closed -> Open/Maximize it
+                launchChatCTA(); // Re-use launch logic
             }
         }
 
         function handleChatClose() {
-            // CHANGED: The UI closing logic is removed so the modal stays open
-            // const wrapper = document.getElementById('chatWrapper');
-            // wrapper.classList.remove('visible');
-            // wrapper.classList.remove('expanded');
-            // isExpanded = false;
-
             console.log("--- End Chat Session (UI remains open) ---");
             console.log("Current Conversation ID:", currentConversationId);
             console.log("Current JWT:", currentJwt ? "Exists" : "Missing");
@@ -439,11 +503,15 @@
 
         function toggleChatExpand() {
             const wrapper = document.getElementById('chatWrapper');
+            const toggle = document.getElementById('sidebarToggle');
+            
             isExpanded = !isExpanded;
             if (isExpanded) {
                 wrapper.classList.add('expanded');
+                toggle.classList.add('expanded');
             } else {
                 wrapper.classList.remove('expanded');
+                toggle.classList.remove('expanded');
             }
         }
 
