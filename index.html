@@ -9,8 +9,9 @@
         :root {
             --brand-primary: #0047AB; /* Deep Cobalt Blue */
             --brand-accent: #00C2FF; /* Electric Blue */
+            --brand-dark: #0f172a;    /* Dark Slate */
             --text-light: #f8fafc;
-            --text-dark: #0f172a;     /* Dark Slate */
+            --text-muted: #94a3b8;
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             --chat-width-normal: 380px;
             --chat-width-expanded: 50vw; 
@@ -74,85 +75,92 @@
             width: var(--chat-width-expanded);
         }
 
-        /* --- CHAT HEADER (FIXED ALIGNMENT) --- */
+        /* --- CHAT HEADER (UPDATED COLOR) --- */
         .chat-header {
-            background: var(--brand-accent); 
-            color: var(--text-dark);
+            background: var(--brand-dark); /* Dark Slate #0f172a */
+            color: white;
             
-            /* Use Fixed Height for perfect vertical alignment */
             height: 64px; 
             padding: 0 1.2rem;
             
             display: flex;
             justify-content: space-between;
-            align-items: center; /* Critical for vertical centering */
+            align-items: center; 
             
             font-weight: 700;
             font-size: 1.05rem;
             flex-shrink: 0; 
-            border-bottom: 1px solid rgba(0,0,0,0.05); 
+            border-bottom: 1px solid #1e293b; /* Subtle separator */
         }
 
-        /* Branding Container (Logo + Text) */
         .header-branding {
             display: flex;
-            align-items: center; /* Ensures logo and text center vertically */
+            align-items: center;
             gap: 12px;
             height: 100%;
         }
 
         .header-logo-img {
-            height: 30px; /* Specific height to match text balance */
+            height: 30px; 
             width: auto;
             display: block;
             object-fit: contain;
         }
 
-        /* Actions Container (Buttons) */
+        /* Buttons Container */
         .header-actions { 
             display: flex; 
-            align-items: center; /* Center buttons vertically */
+            align-items: center; 
             gap: 5px; 
             height: 100%;
         }
 
-        /* Buttons */
+        /* --- BUTTONS (UPDATED COLORS) --- */
         .icon-btn {
             background: transparent; 
             border: none;
-            color: var(--text-dark); 
+            color: var(--text-muted); /* Muted Gray by default */
             width: 34px;
             height: 34px;
             border-radius: 6px; 
             cursor: pointer;
             display: flex;
             align-items: center;
-            justify-content: center; /* Center icon inside button */
-            transition: all 0.2s;
+            justify-content: center; 
+            transition: all 0.2s ease;
         }
-        .icon-btn:hover { background: rgba(0,0,0,0.08); }
+        /* Hover Effect: Light background, White icon */
+        .icon-btn:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: white;
+        }
 
-        /* Icon Switching Logic */
         .icon-btn .icon-collapse { display: none; } 
         .icon-btn .icon-expand { display: block; }  
-
         .chat-wrapper.expanded .icon-collapse { display: block; }
         .chat-wrapper.expanded .icon-expand { display: none; }
 
 
-        /* --- DISCLAIMER BANNER --- */
+        /* --- DISCLAIMER BANNER (TEXT WRAPPING FIX) --- */
         .privacy-banner {
-            background-color: var(--brand-primary); 
+            background-color: var(--brand-primary); /* Deep Cobalt */
             color: white; 
-            padding: 0.7rem 1rem;
+            
+            /* Spacing */
+            padding: 0.8rem 1rem; 
+            padding-right: 40px; /* CRITICAL: Reserve space on right for Close Button */
+            
             font-size: 0.8rem;
             font-weight: 500;
+            line-height: 1.4; /* Better readability for wrapped text */
+            
+            /* Layout */
             display: flex;
             justify-content: center;
             align-items: center;
+            text-align: center;
             position: relative;
             flex-shrink: 0;
-            margin-top: 0; 
             z-index: 40;
             letter-spacing: 0.3px;
         }
@@ -163,13 +171,21 @@
             color: white; 
             font-size: 1.2rem;
             cursor: pointer;
+            
+            /* Absolute positioning relative to the banner container */
             position: absolute; 
-            right: 12px;
-            opacity: 0.8;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%); /* Perfectly centered vertically */
+            
+            opacity: 0.7;
             display: flex;
             align-items: center;
+            width: 30px;
+            height: 30px;
+            justify-content: center;
         }
-        .banner-close-btn:hover { opacity: 1; }
+        .banner-close-btn:hover { opacity: 1; background: rgba(255,255,255,0.1); border-radius: 50%; }
 
         /* --- TARGET AREA --- */
         #salesforce-chat-target {
@@ -216,7 +232,7 @@
         </div>
 
         <div class="privacy-banner" id="privacyBanner">
-            <span>Disclaimer: Responses are generated by AI and may vary.</span>
+            <span>Disclaimer: Responses are generated by AI and may vary. This text is long enough to demonstrate wrapping without hitting the button.</span>
             <button class="banner-close-btn" onclick="closePrivacyBanner()">×</button>
         </div>
 
