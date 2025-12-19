@@ -351,24 +351,40 @@
         let currentJwt = null;
         let currentConversationId = null;
 
-        // --- 1. DATA EVENT LISTENERS ---
+        // --- 1. DEBUG: CATCH-ALL MESSAGE LISTENER (To find the JWT) ---
         window.addEventListener('message', (event) => {
-            if (event.data && event.data.type === 'web_storage') {
-                if (event.data.payload && event.data.payload.jwt) {
-                    currentJwt = event.data.payload.jwt;
-                    console.log("[DEBUG] Captured JWT:", currentJwt);
+            // Filter to relevant origins if possible, or just log safely
+            if (event.origin && event.origin.includes('salesforce')) {
+                // Check for web_storage event type
+                if (event.data && event.data.type === 'web_storage') {
+                    console.log("[DEBUG] Received 'web_storage' event. Payload:", event.data.payload);
+                    
+                    if (event.data.payload && event.data.payload.jwt) {
+                        currentJwt = event.data.payload.jwt;
+                        console.log("✅ SUCCESS: Captured JWT:", currentJwt);
+                    } else {
+                        console.warn("⚠️ Found web_storage event, but NO 'jwt' property found in payload.");
+                    }
                 }
             }
         });
 
+        // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
         window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
-            currentConversationId = event.detail.conversationId;
-            console.log("[DEBUG] Captured Conversation ID:", currentConversationId);
+            console.log("[DEBUG] Event: onEmbeddedMessagingConversationStarted fired.");
+            console.log("[DEBUG] Full Event Detail:", event.detail);
+
+            if (event.detail && event.detail.conversationId) {
+                currentConversationId = event.detail.conversationId;
+                console.log("✅ SUCCESS: Captured Conversation ID:", currentConversationId);
+            } else {
+                console.error("❌ ERROR: ConversationStarted fired, but 'conversationId' is missing.");
+            }
         });
 
-        // --- 2. READY LISTENER (ENABLES BUTTON) ---
+        // --- 3. READY LISTENER ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
-            console.log("[DEBUG] Event Received: onEmbeddedMessagingReady. Enabling Launch Button.");
+            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
             const btn = document.getElementById('launchChatBtn');
             if(btn) {
                 btn.removeAttribute('disabled');
@@ -377,14 +393,21 @@
             }
         });
 
-        // --- 3. UI LOGIC ---
+        // --- 4. MANUAL DEBUG HELPER ---
+        window.printChatDebug = function() {
+            console.table({
+                "JWT": currentJwt || "Not Captured",
+                "Conversation ID": currentConversationId || "Not Captured",
+                "Ready State": document.readyState
+            });
+        }
+
+        // --- UI LOGIC ---
         function launchChatCTA() {
-            console.log("[DEBUG] Launch Chat clicked (Sidebar open only).");
+            console.log("[DEBUG] Launch Chat clicked.");
             const wrapper = document.getElementById('chatWrapper');
             wrapper.classList.add('visible');
-            
-            // REMOVED: embeddedservice_bootstrap.utilAPI.launchChat();
-            // Since mode is 'inline', it should already be rendered in the target div.
+            // 'inline' mode implies the iframe is already present in the target div.
         }
 
         function handleChatClose() {
@@ -393,10 +416,13 @@
             wrapper.classList.remove('expanded');
             isExpanded = false;
 
+            console.log("--- Closing Chat ---");
+            console.log("Current Conversation ID:", currentConversationId);
+            console.log("Current JWT:", currentJwt ? "Exists" : "Missing");
+
             if (currentConversationId && currentJwt) {
                 const url = `https://storm-555fc987410410.my.salesforce-scrt.com/iamessage/v1/conversation/${currentConversationId}`;
-                console.log("[DEBUG] Attempting to delete conversation:", currentConversationId);
-
+                
                 fetch(url, {
                     method: 'DELETE',
                     headers: {
@@ -406,15 +432,15 @@
                 })
                 .then(response => {
                     if (response.ok) {
-                        console.log("[DEBUG] Conversation deleted successfully.");
+                        console.log("✅ API SUCCESS: Conversation deleted.");
                         currentConversationId = null; 
                     } else {
-                        console.error("[DEBUG] Failed to delete conversation. Status:", response.status);
+                        console.error("❌ API ERROR: Failed to delete. Status:", response.status);
                     }
                 })
-                .catch(err => console.error("[DEBUG] API Error during delete:", err));
+                .catch(err => console.error("❌ NETWORK ERROR:", err));
             } else {
-                console.warn("[DEBUG] Cannot delete conversation: Missing ID or JWT.");
+                console.warn("⚠️ SKIPPING DELETE: Missing Conversation ID or JWT.");
             }
         }
 
@@ -461,10 +487,10 @@
             document.getElementById('menuBtn').classList.remove('active');
 
             if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
-                console.log("[DEBUG] Sending utterance:", utterance);
+                console.log("[DEBUG] Sending:", utterance);
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance)
-                    .then(() => console.log("[DEBUG] Utterance sent successfully."))
-                    .catch((err) => console.error("[DEBUG] Error sending utterance:", err));
+                    .then(() => console.log("[DEBUG] Sent."))
+                    .catch((err) => console.error("[DEBUG] Error:", err));
             }
         }
 
@@ -473,21 +499,14 @@
             if (banner) banner.style.display = 'none';
         }
 
-        // --- 4. SAFE INITIALIZATION WITH DEBUGGING ---
-        
+        // --- INIT LOGIC ---
         function onScriptLoaded() {
-            console.log(`[DEBUG] Script onload fired. Document Ready State: ${document.readyState}`);
-            
-            // Check if page is already loaded
+            console.log(`[DEBUG] Script loaded. State: ${document.readyState}`);
             if (document.readyState === 'complete') {
-                console.log("[DEBUG] Document already complete. Initializing immediately.");
                 initEmbeddedMessaging();
             } else {
-                console.log("[DEBUG] Document not complete. Listening for readyState change...");
-                // FIXED: Use readystatechange to detect when state becomes complete
                 document.addEventListener('readystatechange', () => {
                     if (document.readyState === 'complete') {
-                        console.log("[DEBUG] readyState changed to complete. Initializing.");
                         initEmbeddedMessaging();
                     }
                 });
@@ -495,11 +514,10 @@
         }
 
         function initEmbeddedMessaging() {
-            console.log("[DEBUG] initEmbeddedMessaging called.");
-            
+            console.log("[DEBUG] initializing...");
             try {
                 if (!window.embeddedservice_bootstrap) {
-                    console.error("[DEBUG] CRITICAL: embeddedservice_bootstrap is undefined!");
+                    console.error("❌ CRITICAL: Bootstrap undefined.");
                     return;
                 }
 
@@ -508,9 +526,6 @@
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
                 embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
 
-                console.log("[DEBUG] Calling embeddedservice_bootstrap.init()...");
-                
-                // NO .then() block here anymore
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
@@ -519,12 +534,9 @@
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
                 );
-                
-                console.log("[DEBUG] embeddedservice_bootstrap.init() executed successfully.");
-                console.log("[DEBUG] Waiting for 'onEmbeddedMessagingReady' event to enable button...");
-
+                console.log("[DEBUG] Init called.");
             } catch (err) {
-                console.error('[DEBUG] Exception in initEmbeddedMessaging:', err);
+                console.error('[DEBUG] Init failed:', err);
             }
         };
     </script>
