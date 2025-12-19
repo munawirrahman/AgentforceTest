@@ -357,13 +357,11 @@
             if (event.origin && event.origin.includes('salesforce')) {
                 // Check for web_storage event type
                 if (event.data && event.data.type === 'web_storage') {
-                    console.log("[DEBUG] Received 'web_storage' event. Payload:", event.data.payload);
                     
+                    // --- SPECIFIC CONSOLE LOG FOR JWT ---
                     if (event.data.payload && event.data.payload.jwt) {
                         currentJwt = event.data.payload.jwt;
-                        console.log("✅ SUCCESS: Captured JWT:", currentJwt);
-                    } else {
-                        console.warn("⚠️ Found web_storage event, but NO 'jwt' property found in payload.");
+                        console.log(">> Listener caught JWT:", currentJwt);
                     }
                 }
             }
@@ -371,14 +369,11 @@
 
         // --- 2. DEBUG: CONVERSATION LISTENER (To find the ID) ---
         window.addEventListener('onEmbeddedMessagingConversationStarted', (event) => {
-            console.log("[DEBUG] Event: onEmbeddedMessagingConversationStarted fired.");
-            console.log("[DEBUG] Full Event Detail:", event.detail);
-
             if (event.detail && event.detail.conversationId) {
                 currentConversationId = event.detail.conversationId;
-                console.log("✅ SUCCESS: Captured Conversation ID:", currentConversationId);
-            } else {
-                console.error("❌ ERROR: ConversationStarted fired, but 'conversationId' is missing.");
+                
+                // --- SPECIFIC CONSOLE LOG FOR CONVERSATION ID ---
+                console.log(">> Listener caught Conversation ID:", currentConversationId);
             }
         });
 
