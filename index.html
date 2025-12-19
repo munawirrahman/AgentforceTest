@@ -85,10 +85,7 @@
             justify-content: space-between;
             align-items: center; 
             font-weight: 700;
-            
-            /* Font Size */
             font-size: 16px; 
-            
             flex-shrink: 0; 
             border-bottom: 1px solid #1e293b; 
         }
@@ -313,48 +310,49 @@
             }
         }
 
-        // --- MENU LOGIC (UPDATED) ---
+        // --- MENU LOGIC ---
         function toggleMenu(event) {
-            // Prevent this click from triggering the document listener immediately
             if(event) event.stopPropagation();
-
             const menu = document.getElementById('headerDropdown');
             const btn = document.getElementById('menuBtn');
             menu.classList.toggle('show');
             btn.classList.toggle('active');
         }
 
-        // CLOSE MENU ON OUTSIDE CLICK (Robust Method)
+        // Close menu if clicking OUTSIDE (Parent page)
         document.addEventListener('click', function(event) {
             const menu = document.getElementById('headerDropdown');
             const btn = document.getElementById('menuBtn');
             const menuContainer = document.querySelector('.menu-container');
 
-            // If menu is open AND click is OUTSIDE the menu container
             if (menu.classList.contains('show') && !menuContainer.contains(event.target)) {
                 menu.classList.remove('show');
                 btn.classList.remove('active');
             }
         });
 
+        // CRITICAL FIX: Close menu if clicking INSIDE THE IFRAME (Window Blur)
+        // When you click the iframe, the main window loses focus. We use this signal to close the menu.
+        window.addEventListener('blur', function() {
+            const menu = document.getElementById('headerDropdown');
+            const btn = document.getElementById('menuBtn');
+            
+            // We use a small timeout to ensure it's a real blur event (like clicking iframe)
+            // and not just clicking a button inside the same doc
+            if (menu && menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                btn.classList.remove('active');
+            }
+        });
+
         function handleMenuAction(utterance) {
-            // 1. Hide menu
             document.getElementById('headerDropdown').classList.remove('show');
             document.getElementById('menuBtn').classList.remove('active');
 
-            // 2. Send Message via Salesforce API
-            console.log("Sending utterance:", utterance);
-
             if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance)
-                    .then(() => {
-                        console.log("Message sent successfully: " + utterance);
-                    })
-                    .catch((err) => {
-                        console.error("Error sending text message:", err);
-                    });
-            } else {
-                console.warn("embeddedservice_bootstrap.utilAPI.sendTextMessage is not available in this context.");
+                    .then(() => console.log("Sent: " + utterance))
+                    .catch((err) => console.error("Error:", err));
             }
         }
 
