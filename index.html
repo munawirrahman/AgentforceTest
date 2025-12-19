@@ -1,46 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
-  <title>Inline Chat</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #f0f0f0;
-      font-family: sans-serif;
-    }
-    #chat-container {
-      width: 400px;
-      height: 600px;
-      border: 2px solid #ccc;
-      background: #fff;
-      position: relative;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apex Automotive | Agentforce Assistant</title>
+    <style>
+        /* --- BRANDING & RESET --- */
+        :root {
+            --brand-primary: #0047AB;
+            --brand-accent: #00C2FF;
+            --text-light: #f8fafc;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+        
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; 
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--brand-accent); }
+
+        /* --- MAIN LAYOUT --- */
+        main {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            padding: 3rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+            height: calc(100vh - 80px); 
+        }
+
+        .content-panel { display: flex; flex-direction: column; justify-content: center; padding-right: 2rem; }
+        h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
+        p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
+
+        /* --- CHAT WRAPPER --- */
+        .chat-wrapper {
+            background: #fff; 
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            height: 100%; 
+            max-height: 800px; 
+            position: relative;
+        }
+
+        /* FIX: We ensure this target is absolutely positioned to fill the wrapper 
+           This mimics the fixed height success of your working code 
+        */
+        #salesforce-chat-target {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #f3f4f6;
+        }
+    </style>
 </head>
 <body>
-  <div id="chat-container"></div>
 
-  <script type='text/javascript'>
+    <header>
+        <div class="logo">APEX <span>AUTOMOTIVE</span></div>
+        <div style="font-size: 0.9rem; color: #94a3b8;">Agentforce Demo</div>
+    </header>
 
-    window.addEventListener("beforeunload", () => {
-        if(embeddedservice_bootstrap.utilAPI) {
-            embeddedservice_bootstrap.utilAPI.removeAllComponents()
-        }
-    });
-    function initEmbeddedMessaging() {
-      try {
-        embeddedservice_bootstrap.settings.language = 'en_US';
-        embeddedservice_bootstrap.settings.displayMode = 'inline';
-        embeddedservice_bootstrap.settings.headerEnabled = false; // Optional
-        embeddedservice_bootstrap.settings.targetElement = document.getElementById('chat-container');
+    <main>
+        <div class="content-panel">
+            <h1>Experience the<br>Future of Driving.</h1>
+            <p class="subtitle">Your personal concierge is ready to help you configure your Model X.</p>
+        </div>
 
-        embeddedservice_bootstrap.init(
+        <div class="chat-wrapper">
+            <div id="salesforce-chat-target"></div>
+        </div>
+    </main>
+
+    <script type='text/javascript'>
+        // 1. Cleanup on refresh (From your working code)
+        window.addEventListener("beforeunload", () => {
+            if(embeddedservice_bootstrap.utilAPI) {
+                embeddedservice_bootstrap.utilAPI.removeAllComponents();
+            }
+        });
+
+        function initEmbeddedMessaging() {
+            try {
+                // 2. Simple Configuration
+                embeddedservice_bootstrap.settings.language = 'en_US'; 
+                embeddedservice_bootstrap.settings.displayMode = 'inline';
+                
+                // 3. Target the element
+                embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
+
+                // 4. Initialize WITHOUT .then() (The critical fix)
+                embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
                     'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878',
@@ -48,11 +122,13 @@
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
                 );
-      } catch (err) {
-        console.error('Error loading Embedded Messaging:', err);
-      }
-    }
-  </script>
-  <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
+            } catch (err) {
+                console.error('Error loading Embedded Messaging: ', err);
+            }
+        };
+    </script>
+    <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='initEmbeddedMessaging()'></script>
+
 </body>
 </html>
