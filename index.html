@@ -26,7 +26,34 @@
             overflow: hidden; 
         }
 
-        /* --- 1. LEFT COLUMN: CHAT SIDEBAR (FULL HEIGHT) --- */
+        /* --- 1. LEFT COLUMN: MAIN CONTENT (Fills Space) --- */
+        .main-content {
+            flex: 1; /* Grow to fill available space */
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto; 
+            position: relative;
+        }
+
+        header.global-header {
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        .logo span { color: var(--brand-accent); }
+
+        .content-panel {
+            padding: 4rem;
+            max-width: 900px;
+        }
+
+        h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
+        p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
+
+        /* --- 2. RIGHT COLUMN: CHAT SIDEBAR (Fixed/Expandable) --- */
         .chat-wrapper {
             background: #fff; 
             width: var(--chat-width-normal);
@@ -35,8 +62,10 @@
             flex-direction: column; 
             position: relative;
             z-index: 50;
-            box-shadow: 5px 0 30px rgba(0,0,0,0.3);
-            border-right: 1px solid #333;
+            
+            /* UPDATED: Border on Left, Shadow on Left */
+            border-left: 1px solid #333;
+            box-shadow: -5px 0 30px rgba(0,0,0,0.3);
             
             /* Smooth Expansion Animation */
             transition: width 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -62,10 +91,7 @@
         }
 
         /* Header Icons Container */
-        .header-actions {
-            display: flex;
-            gap: 10px;
-        }
+        .header-actions { display: flex; gap: 10px; }
 
         .icon-btn {
             background: rgba(255,255,255,0.15);
@@ -73,7 +99,7 @@
             color: white;
             width: 32px;
             height: 32px;
-            border-radius: 4px; /* Square-ish for UI feel */
+            border-radius: 4px; 
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -114,39 +140,29 @@
             background-color: #f3f4f6;
         }
 
-
-        /* --- 2. RIGHT COLUMN: MAIN CONTENT --- */
-        .main-content {
-            flex: 1; /* Fills remaining space */
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto; /* Allow content to scroll if needed */
-        }
-
-        header.global-header {
-            padding: 1.5rem 3rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
-        .logo span { color: var(--brand-accent); }
-
-        .content-panel {
-            padding: 4rem;
-            max-width: 900px;
-        }
-
-        h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
-        p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
-
         /* Icon SVG styling */
         .icon-svg { width: 16px; height: 16px; fill: currentColor; }
 
     </style>
 </head>
 <body>
+
+    <div class="main-content">
+        <header class="global-header">
+            <div class="logo">APEX <span>AUTOMOTIVE</span></div>
+            <div style="font-size: 0.9rem; color: #94a3b8;">Agentforce Demo</div>
+        </header>
+
+        <div class="content-panel">
+            <h1>Experience the<br>Future of Driving.</h1>
+            <p class="subtitle">Your personal concierge is ready on the right to help you configure your Model X.</p>
+            
+            <div style="margin-top:2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+                <h3>Model X - 2025 Edition</h3>
+                <p style="color:#aaa;">Starting at $79,900</p>
+            </div>
+        </div>
+    </div>
 
     <div class="chat-wrapper" id="chatWrapper">
         
@@ -167,25 +183,6 @@
 
         <div id="salesforce-chat-target"></div>
     </div>
-
-
-    <div class="main-content">
-        <header class="global-header">
-            <div class="logo">APEX <span>AUTOMOTIVE</span></div>
-            <div style="font-size: 0.9rem; color: #94a3b8;">Agentforce Demo</div>
-        </header>
-
-        <div class="content-panel">
-            <h1>Experience the<br>Future of Driving.</h1>
-            <p class="subtitle">Your personal concierge is ready on the left to help you configure your Model X.</p>
-            
-            <div style="margin-top:2rem; padding: 2rem; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                <h3>Model X - 2025 Edition</h3>
-                <p style="color:#aaa;">Starting at $79,900</p>
-            </div>
-        </div>
-    </div>
-
 
     <script type='text/javascript'>
         
@@ -210,7 +207,6 @@
         }
 
         function handleChatClose() {
-            // Add clear session logic here if needed
             console.log("Close session clicked");
             if(embeddedservice_bootstrap.utilAPI) {
                 embeddedservice_bootstrap.utilAPI.clearSession();
