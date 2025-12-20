@@ -58,7 +58,7 @@
 
         /* --- 2. SIDEBAR TOGGLE BUTTON --- */
         .sidebar-toggle {
-            /* Displayed by default now since it is the only trigger */
+            /* Displayed by default */
             display: flex; 
             
             position: absolute;
@@ -343,10 +343,10 @@
         <div class="content-panel">
             <h1>Experience the<br>Future of Driving.</h1>
             <p class="subtitle">Welcome back. Continue where you left off.</p>
-            </div>
+        </div>
     </div>
 
-    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarState()" title="Start Chatting">
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarState()" title="Chat Toggle">
         <svg class="icon-svg icon-maximize" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
         <span class="toggle-text" id="toggleTextLabel">Start Chatting</span>
         <svg class="icon-svg icon-minimize" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
@@ -395,13 +395,46 @@
         let isExpanded = false;
         let isInitialized = false; 
 
+        // --- SESSION MANAGEMENT ---
+        const SESSION_KEY = 'apex_chat_session_start';
+        const SESSION_TIMEOUT_MINUTES = 30;
+
+        function checkSessionStatus() {
+            const storedTime = localStorage.getItem(SESSION_KEY);
+            if (!storedTime) return 'NEW';
+
+            const now = new Date().getTime();
+            const elapsed = (now - parseInt(storedTime)) / (1000 * 60); // minutes
+
+            if (elapsed > SESSION_TIMEOUT_MINUTES) {
+                // Session expired
+                localStorage.removeItem(SESSION_KEY);
+                return 'NEW';
+            }
+            return 'CONTINUE';
+        }
+
+        function startSessionTracking() {
+            localStorage.setItem(SESSION_KEY, new Date().getTime().toString());
+        }
+
+        // --- ON LOAD: SET INITIAL BUTTON TEXT ---
+        document.addEventListener("DOMContentLoaded", () => {
+            const status = checkSessionStatus();
+            const toggleText = document.getElementById('toggleTextLabel');
+            if (status === 'CONTINUE') {
+                toggleText.innerText = "Continue Chatting";
+            } else {
+                toggleText.innerText = "Start Chatting";
+            }
+        });
+
         // --- READY LISTENER ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
             console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
         });
 
         // --- UI LOGIC: OPEN/CLOSE ---
-        
         function updateSidebarState(isVisible) {
             const wrapper = document.getElementById('chatWrapper');
             const toggle = document.getElementById('sidebarToggle');
@@ -409,53 +442,76 @@
             if (isVisible) {
                 wrapper.classList.add('visible');
                 toggle.classList.add('chat-open'); 
-                
-                // Ensure toggle also gets 'expanded' if wrapper is already expanded
                 if(wrapper.classList.contains('expanded')) {
                     toggle.classList.add('expanded');
                 }
             } else {
                 wrapper.classList.remove('visible');
-                // When hiding, remove positioning classes from toggle so it snaps back to right
                 toggle.classList.remove('chat-open');
                 toggle.classList.remove('expanded');
             }
         }
         
-        // Toggle function for the side button
+        // --- MAIN TOGGLE FUNCTION ---
         function toggleSidebarState() {
             const wrapper = document.getElementById('chatWrapper');
             const toggleText = document.getElementById('toggleTextLabel');
             const isVisible = wrapper.classList.contains('visible');
-            
-            // Logic:
-            // 1. If not initialized yet, this is the "Start Chatting" click.
+            const sessionStatus = checkSessionStatus();
+
+            // Case 1: First time user interacts with button in this view
             if (!isInitialized) {
-                console.log("[DEBUG] First Launch - Initializing Embedded Messaging...");
+                console.log(`[DEBUG] Initializing. Session Status: ${sessionStatus}`);
+                
+                // Initialize the framework
                 initEmbeddedMessaging();
                 isInitialized = true;
-
-                // Update text to "Continue Chatting" for future use
-                if(toggleText) toggleText.innerText = "Continue Chatting";
                 
-                // Open Sidebar
+                // Track session
+                startSessionTracking();
+                toggleText.innerText = "Continue Chatting";
+
+                // If it's a "CONTINUE" session, we need to force the chat widget to re-render properly
+                if (sessionStatus === 'CONTINUE') {
+                    // Slight delay to ensure init completes before calling launch
+                    setTimeout(() => {
+                        if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
+                            console.log("[DEBUG] Triggering launchChat() for continuity...");
+                            embeddedservice_bootstrap.utilAPI.launchChat()
+                                .then(() => console.log("[DEBUG] launchChat success."))
+                                .catch(e => console.error("[DEBUG] launchChat failed:", e));
+                        }
+                    }, 500); 
+                }
+
                 updateSidebarState(true);
+                
             } else {
-                // 2. Already initialized. Just toggle Open/Close.
+                // Case 2: Already initialized, just toggling UI
                 if (isVisible) {
-                    // Minimized Mode: Text is visible and says "Continue Chatting"
                     updateSidebarState(false);
                 } else {
-                    // Open Mode: Text is hidden via CSS
                     updateSidebarState(true);
+                    
+                    // Optional: Call launchChat again just to be safe if it was minimized
+                    if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
+                         embeddedservice_bootstrap.utilAPI.launchChat();
+                    }
                 }
             }
         }
 
         function handleChatClose() {
             console.log("--- End Conversation Button Clicked ---");
+            
+            // 1. Clear Local Storage Session
+            localStorage.removeItem(SESSION_KEY);
+            
+            // 2. Reset Text
+            const toggleText = document.getElementById('toggleTextLabel');
+            if(toggleText) toggleText.innerText = "Start Chatting";
 
-            // Dispatch event to Salesforce iframe to end session
+            // 3. Send event to Salesforce
             let cwcIframe = document.getElementById('embeddedMessagingFrame');
             if (cwcIframe) {
                 cwcIframe.contentWindow.postMessage({
