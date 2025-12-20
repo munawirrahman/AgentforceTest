@@ -381,6 +381,9 @@
         
         let isExpanded = false;
         let isInitialized = false;
+        
+        // Flag to differentiate a fresh start vs a restored session
+        let isRestoredSession = false;
 
         // --- SESSION MANAGEMENT ---
         const SESSION_KEY = 'apex_chat_session_start';
@@ -410,7 +413,6 @@
             const script = document.createElement('script');
             script.type = 'text/javascript';
             script.src = 'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js';
-            // This mimics the logic: onload='initEmbeddedMessaging()'
             script.onload = initEmbeddedMessaging; 
             document.body.appendChild(script);
         }
@@ -424,15 +426,16 @@
                 console.log("[DEBUG] Session detected. Pre-loading script for continuity.");
                 toggleText.innerText = "Continue Chatting";
                 
-                // Pre-load the script immediately! 
-                // This ensures API is ready before user even clicks the button.
+                // Mark as restored so initEmbeddedMessaging knows NOT to set displayMode
+                isRestoredSession = true;
+
                 loadSalesforceScript();
-                isInitialized = true; // Mark as initialized so button click only toggles UI
+                isInitialized = true; 
                 
             } else {
                 console.log("[DEBUG] New session. Waiting for user to click Start.");
                 toggleText.innerText = "Start Chatting";
-                // We do NOT load the script here. We wait for the click.
+                isRestoredSession = false;
             }
         });
 
@@ -465,29 +468,28 @@
             const toggleText = document.getElementById('toggleTextLabel');
             const isVisible = wrapper.classList.contains('visible');
 
-            // Case 1: Not Initialized (New User Click)
+            // Case 1: First time user interacts (Start Chatting)
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction. Loading script...");
                 
-                loadSalesforceScript(); // Inject script now
+                // This is a NEW session, so isRestoredSession stays false.
+                loadSalesforceScript(); 
                 isInitialized = true;
-                startSessionTracking(); // Start session timer
+                startSessionTracking(); 
                 toggleText.innerText = "Continue Chatting";
                 
                 updateSidebarState(true);
             } 
-            // Case 2: Already Initialized (Returning User OR New User who already clicked)
+            // Case 2: Already Initialized
             else {
                 if (isVisible) {
                     updateSidebarState(false);
                 } else {
                     updateSidebarState(true);
                     
-                    // Since script was pre-loaded on page load (for continuing users),
-                    // the API is ready. We can safely call launchChat().
                     if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
-                         //console.log("[DEBUG] Calling launchChat()...");
-                         //embeddedservice_bootstrap.utilAPI.launchChat();
+                         console.log("[DEBUG] Calling launchChat()...");
+                         embeddedservice_bootstrap.utilAPI.launchChat();
                     }
                 }
             }
@@ -499,6 +501,9 @@
             
             const toggleText = document.getElementById('toggleTextLabel');
             if(toggleText) toggleText.innerText = "Start Chatting";
+            
+            // Reset restored flag just in case
+            isRestoredSession = false;
 
             let cwcIframe = document.getElementById('embeddedMessagingFrame');
             if (cwcIframe) {
@@ -522,9 +527,8 @@
         }
 
         // --- GLOBAL INIT FUNCTION ---
-        // Defined globally so the injected script can call it via onload
         window.initEmbeddedMessaging = function() {
-            console.log("[DEBUG] initEmbeddedMessaging called via script onload.");
+            console.log("[DEBUG] initEmbeddedMessaging called. isRestoredSession:", isRestoredSession);
             try {
                 if (!window.embeddedservice_bootstrap) {
                     console.error("❌ CRITICAL: Bootstrap undefined.");
@@ -532,7 +536,17 @@
                 }
 
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
-                embeddedservice_bootstrap.settings.displayMode = 'inline';
+                
+                // --- LOGIC CHANGE ---
+                // Only set displayMode='inline' if this is a NEW session.
+                // On continuation, we skip it to prevent overriding the restored state.
+                if (!isRestoredSession) {
+                    console.log("[DEBUG] Setting displayMode = 'inline' (New Session)");
+                    embeddedservice_bootstrap.settings.displayMode = 'inline';
+                } else {
+                    console.log("[DEBUG] Skipping displayMode (Restored Session)");
+                }
+                
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
                 embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
 
