@@ -381,8 +381,6 @@
         
         let isExpanded = false;
         let isInitialized = false;
-        
-        // Flag to differentiate a fresh start vs a restored session
         let isRestoredSession = false;
 
         // --- SESSION MANAGEMENT ---
@@ -407,7 +405,7 @@
             localStorage.setItem(SESSION_KEY, new Date().getTime().toString());
         }
 
-        // --- DYNAMIC SCRIPT INJECTION HELPER ---
+        // --- DYNAMIC SCRIPT INJECTION ---
         function loadSalesforceScript() {
             console.log("[DEBUG] Injecting Salesforce script...");
             const script = document.createElement('script');
@@ -426,6 +424,7 @@
                 console.log("[DEBUG] Session detected. Pre-loading script for continuity.");
                 toggleText.innerText = "Continue Chatting";
                 
+                // Flag to set specific settings in initEmbeddedMessaging
                 isRestoredSession = true;
 
                 loadSalesforceScript();
@@ -481,15 +480,11 @@
             } 
             // Case 2: Already Initialized
             else {
+                // Just toggle visibility. No API calls needed.
                 if (isVisible) {
                     updateSidebarState(false);
                 } else {
                     updateSidebarState(true);
-                    
-                    if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
-                         console.log("[DEBUG] Calling launchChat()...");
-                         embeddedservice_bootstrap.utilAPI.launchChat();
-                    }
                 }
             }
         }
@@ -540,7 +535,7 @@
                 if (isRestoredSession) {
                     console.log("[DEBUG] Config: Floating (Restored Session)");
                     embeddedservice_bootstrap.settings.displayMode = 'floating';
-                    // FIX: Must target valid DOM element, not empty string
+                    // We must target 'document.body' for floating mode to work correctly
                     embeddedservice_bootstrap.settings.targetElement = document.body; 
                 } else {
                     console.log("[DEBUG] Config: Inline (New Session)");
