@@ -56,43 +56,10 @@
         h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
         p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
 
-        /* --- CTA BUTTON (Updated for Continuity) --- */
-        .cta-btn {
-            background-color: var(--brand-accent);
-            color: var(--brand-dark);
-            border: none;
-            padding: 1rem 2rem;
-            font-size: 1.1rem;
-            font-weight: 700;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s, background-color 0.2s; 
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            width: fit-content;
-        }
-
-        .cta-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(0, 194, 255, 0.3);
-            background-color: #33cfff;
-        }
-
-        .cta-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-            pointer-events: none; 
-            box-shadow: none;
-            transform: none;
-            background-color: #475569; 
-            color: #94a3b8;
-        }
-
         /* --- 2. SIDEBAR TOGGLE BUTTON --- */
         .sidebar-toggle {
-            /* Hidden by default until chat launches */
-            display: none; 
+            /* Displayed by default now since it is the only trigger */
+            display: flex; 
             
             position: absolute;
             top: 50%;
@@ -119,10 +86,6 @@
             justify-content: center;
             gap: 10px;
             box-shadow: -2px 0 10px rgba(0,0,0,0.2);
-        }
-
-        .sidebar-toggle.active {
-            display: flex;
         }
 
         .sidebar-toggle:hover {
@@ -380,17 +343,12 @@
         <div class="content-panel">
             <h1>Experience the<br>Future of Driving.</h1>
             <p class="subtitle">Welcome back. Continue where you left off.</p>
-            
-            <button class="cta-btn" id="launchChatBtn" onclick="launchChatCTA()">
-                <span>Continue Chatting</span>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
-            </button>
-        </div>
+            </div>
     </div>
 
-    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarState()" title="Minimize/Maximize Chat">
+    <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebarState()" title="Start Chatting">
         <svg class="icon-svg icon-maximize" viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-        <span class="toggle-text">Continue Chatting</span>
+        <span class="toggle-text" id="toggleTextLabel">Start Chatting</span>
         <svg class="icon-svg icon-minimize" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
     </button>
 
@@ -463,37 +421,34 @@
                 toggle.classList.remove('expanded');
             }
         }
-
-        function launchChatCTA() {
-            console.log("[DEBUG] Continue Chatting clicked.");
-            
-            // 1. Disable the Launch Button
-            document.getElementById('launchChatBtn').disabled = true;
-
-            // 2. Open Sidebar UI
-            updateSidebarState(true);
-            
-            // 3. Reveal Side Toggle
-            document.getElementById('sidebarToggle').classList.add('active');
-            
-            // 4. Init if needed
-            if (!isInitialized) {
-                console.log("[DEBUG] Initializing Embedded Messaging...");
-                initEmbeddedMessaging();
-                isInitialized = true;
-            }
-        }
         
         // Toggle function for the side button
         function toggleSidebarState() {
             const wrapper = document.getElementById('chatWrapper');
+            const toggleText = document.getElementById('toggleTextLabel');
             const isVisible = wrapper.classList.contains('visible');
             
-            if (isVisible) {
-                updateSidebarState(false);
-            } else {
-                // If opening via side button, just ensure UI is visible
+            // Logic:
+            // 1. If not initialized yet, this is the "Start Chatting" click.
+            if (!isInitialized) {
+                console.log("[DEBUG] First Launch - Initializing Embedded Messaging...");
+                initEmbeddedMessaging();
+                isInitialized = true;
+
+                // Update text to "Continue Chatting" for future use
+                if(toggleText) toggleText.innerText = "Continue Chatting";
+                
+                // Open Sidebar
                 updateSidebarState(true);
+            } else {
+                // 2. Already initialized. Just toggle Open/Close.
+                if (isVisible) {
+                    // Minimized Mode: Text is visible and says "Continue Chatting"
+                    updateSidebarState(false);
+                } else {
+                    // Open Mode: Text is hidden via CSS
+                    updateSidebarState(true);
+                }
             }
         }
 
@@ -506,7 +461,6 @@
                 cwcIframe.contentWindow.postMessage({
                     "eventName": "END_CONVERSATION"
                 },
-                // Target Origin: Protocol + Domain only
                 "https://storm-555fc987410410.my.site.com"
                 );
                 console.log('📤 postMessage sent to iframe');
