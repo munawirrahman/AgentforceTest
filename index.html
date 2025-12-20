@@ -415,9 +415,6 @@
             script.src = 'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js';
             script.onload = initEmbeddedMessaging; 
             document.body.appendChild(script);
-            //embeddedservice_bootstrap.settings.displayMode = 'floating';
-            
-            
         }
 
         // --- ON LOAD: CHECK SESSION & PRELOAD IF NEEDED ---
@@ -542,8 +539,9 @@
                 // --- CONFIG LOGIC ---
                 if (isRestoredSession) {
                     console.log("[DEBUG] Config: Floating (Restored Session)");
-                    embeddedservice_bootstrap.settings.displayMode = 'inline';
-                    embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
+                    embeddedservice_bootstrap.settings.displayMode = 'floating';
+                    // FIX: Must target valid DOM element, not empty string
+                    embeddedservice_bootstrap.settings.targetElement = document.body; 
                 } else {
                     console.log("[DEBUG] Config: Inline (New Session)");
                     embeddedservice_bootstrap.settings.displayMode = 'inline';
