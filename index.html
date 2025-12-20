@@ -381,8 +381,6 @@
         
         let isExpanded = false;
         let isInitialized = false;
-        // NEW FLAG: Used to queue a launchChat request
-        let pendingLaunch = false; 
 
         // --- SESSION MANAGEMENT ---
         const SESSION_KEY = 'apex_chat_session_start';
@@ -406,40 +404,44 @@
             localStorage.setItem(SESSION_KEY, new Date().getTime().toString());
         }
 
-        // --- ON LOAD: SET INITIAL BUTTON TEXT ---
+        // --- DYNAMIC SCRIPT INJECTION HELPER ---
+        function loadSalesforceScript() {
+            console.log("[DEBUG] Injecting Salesforce script...");
+            const script = document.createElement('script');
+            script.type = 'text/javascript';
+            script.src = 'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js';
+            // This mimics the logic: onload='initEmbeddedMessaging()'
+            script.onload = initEmbeddedMessaging; 
+            document.body.appendChild(script);
+        }
+
+        // --- ON LOAD: CHECK SESSION & PRELOAD IF NEEDED ---
         document.addEventListener("DOMContentLoaded", () => {
             const status = checkSessionStatus();
             const toggleText = document.getElementById('toggleTextLabel');
-            if (status === 'CONTINUE') {
-                toggleText.innerText = "Continue Chatting";
-            } else {
-                toggleText.innerText = "Start Chatting";
-            }
-        });
-
-        // --- IMPORTANT: READY EVENT LISTENER ---
-        // This event fires when Salesforce scripts are fully loaded and ready to accept API calls.
-        window.addEventListener('onEmbeddedMessagingReady', (event) => {
-            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
             
-            // If we have a pending launch request (from continuation), execute it now.
-            if (pendingLaunch) {
-                console.log("[DEBUG] Found pending launch request. Executing launchChat()...");
+            if (status === 'CONTINUE') {
+                console.log("[DEBUG] Session detected. Pre-loading script for continuity.");
+                toggleText.innerText = "Continue Chatting";
                 
-                if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
-                    embeddedservice_bootstrap.utilAPI.launchChat()
-                        .then(() => {
-                            console.log("[DEBUG] launchChat success.");
-                            pendingLaunch = false; // Reset flag
-                        })
-                        .catch(e => console.error("[DEBUG] launchChat failed inside Ready Listener:", e));
-                } else {
-                    console.error("[DEBUG] API still not defined even after Ready event.");
-                }
+                // Pre-load the script immediately! 
+                // This ensures API is ready before user even clicks the button.
+                loadSalesforceScript();
+                isInitialized = true; // Mark as initialized so button click only toggles UI
+                
+            } else {
+                console.log("[DEBUG] New session. Waiting for user to click Start.");
+                toggleText.innerText = "Start Chatting";
+                // We do NOT load the script here. We wait for the click.
             }
         });
 
-        // --- UI LOGIC: OPEN/CLOSE ---
+        // --- READY EVENT LISTENER ---
+        window.addEventListener('onEmbeddedMessagingReady', (event) => {
+            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired. API is now available.");
+        });
+
+        // --- UI LOGIC ---
         function updateSidebarState(isVisible) {
             const wrapper = document.getElementById('chatWrapper');
             const toggle = document.getElementById('sidebarToggle');
@@ -462,34 +464,29 @@
             const wrapper = document.getElementById('chatWrapper');
             const toggleText = document.getElementById('toggleTextLabel');
             const isVisible = wrapper.classList.contains('visible');
-            const sessionStatus = checkSessionStatus();
 
-            // Case 1: First time user interacts with button in this view
+            // Case 1: Not Initialized (New User Click)
             if (!isInitialized) {
-                console.log(`[DEBUG] Initializing. Session Status: ${sessionStatus}`);
+                console.log("[DEBUG] First interaction. Loading script...");
                 
-                // If it's a "CONTINUE" session, set flag to True so the Event Listener knows to launch chat.
-                if (sessionStatus === 'CONTINUE') {
-                    pendingLaunch = true; 
-                }
-
-                initEmbeddedMessaging();
+                loadSalesforceScript(); // Inject script now
                 isInitialized = true;
-                
-                startSessionTracking();
+                startSessionTracking(); // Start session timer
                 toggleText.innerText = "Continue Chatting";
-
-                updateSidebarState(true);
                 
-            } else {
-                // Case 2: Already initialized, just toggling UI
+                updateSidebarState(true);
+            } 
+            // Case 2: Already Initialized (Returning User OR New User who already clicked)
+            else {
                 if (isVisible) {
                     updateSidebarState(false);
                 } else {
                     updateSidebarState(true);
-                    // If reopening an already initialized chat, launchChat is usually safe to call directly 
-                    // because the script is already loaded.
+                    
+                    // Since script was pre-loaded on page load (for continuing users),
+                    // the API is ready. We can safely call launchChat().
                     if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
+                         console.log("[DEBUG] Calling launchChat()...");
                          embeddedservice_bootstrap.utilAPI.launchChat();
                     }
                 }
@@ -497,33 +494,23 @@
         }
 
         function handleChatClose() {
-            console.log("--- End Conversation Button Clicked ---");
-            
-            // 1. Clear Local Storage Session
+            console.log("--- End Conversation ---");
             localStorage.removeItem(SESSION_KEY);
             
-            // 2. Reset Text
             const toggleText = document.getElementById('toggleTextLabel');
             if(toggleText) toggleText.innerText = "Start Chatting";
 
-            // 3. Send event to Salesforce
             let cwcIframe = document.getElementById('embeddedMessagingFrame');
             if (cwcIframe) {
                 cwcIframe.contentWindow.postMessage({
                     "eventName": "END_CONVERSATION"
-                },
-                "https://storm-555fc987410410.my.site.com"
-                );
-                console.log('📤 postMessage sent to iframe');
-            } else {
-                console.log('⚠️ embeddedMessagingFrame iframe not found');
+                }, "https://storm-555fc987410410.my.site.com");
             }
         }
 
         function toggleChatExpand() {
             const wrapper = document.getElementById('chatWrapper');
             const toggle = document.getElementById('sidebarToggle');
-            
             isExpanded = !isExpanded;
             if (isExpanded) {
                 wrapper.classList.add('expanded');
@@ -534,58 +521,10 @@
             }
         }
 
-        function toggleMenu(event) {
-            if(event) event.stopPropagation();
-            const menu = document.getElementById('headerDropdown');
-            const btn = document.getElementById('menuBtn');
-            menu.classList.toggle('show');
-            btn.classList.toggle('active');
-        }
-
-        document.addEventListener('click', function(event) {
-            const menu = document.getElementById('headerDropdown');
-            const btn = document.getElementById('menuBtn');
-            const menuContainer = document.querySelector('.menu-container');
-
-            if (menu.classList.contains('show') && !menuContainer.contains(event.target)) {
-                menu.classList.remove('show');
-                btn.classList.remove('active');
-            }
-        });
-
-        window.addEventListener('blur', function() {
-            const menu = document.getElementById('headerDropdown');
-            const btn = document.getElementById('menuBtn');
-            if (menu && menu.classList.contains('show')) {
-                menu.classList.remove('show');
-                btn.classList.remove('active');
-            }
-        });
-
-        function handleMenuAction(utterance) {
-            document.getElementById('headerDropdown').classList.remove('show');
-            document.getElementById('menuBtn').classList.remove('active');
-
-            if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
-                console.log("[DEBUG] Sending:", utterance);
-                embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance)
-                    .then(() => console.log("[DEBUG] Sent."))
-                    .catch((err) => console.error("[DEBUG] Error:", err));
-            }
-        }
-
-        function closePrivacyBanner() {
-            const banner = document.getElementById('privacyBanner');
-            if (banner) banner.style.display = 'none';
-        }
-
-        // --- INIT LOGIC ---
-        function onScriptLoaded() {
-            console.log(`[DEBUG] Script loaded. Waiting for user interaction...`);
-        }
-
-        function initEmbeddedMessaging() {
-            console.log("[DEBUG] initializing...");
+        // --- GLOBAL INIT FUNCTION ---
+        // Defined globally so the injected script can call it via onload
+        window.initEmbeddedMessaging = function() {
+            console.log("[DEBUG] initEmbeddedMessaging called via script onload.");
             try {
                 if (!window.embeddedservice_bootstrap) {
                     console.error("❌ CRITICAL: Bootstrap undefined.");
@@ -605,14 +544,43 @@
                         scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
                     }
                 );
-                console.log("[DEBUG] Init called.");
             } catch (err) {
                 console.error('[DEBUG] Init failed:', err);
             }
         };
+
+        // --- MENU LOGIC ---
+        function toggleMenu(event) {
+            if(event) event.stopPropagation();
+            const menu = document.getElementById('headerDropdown');
+            const btn = document.getElementById('menuBtn');
+            menu.classList.toggle('show');
+            btn.classList.toggle('active');
+        }
+
+        document.addEventListener('click', function(event) {
+            const menu = document.getElementById('headerDropdown');
+            const btn = document.getElementById('menuBtn');
+            const menuContainer = document.querySelector('.menu-container');
+            if (menu.classList.contains('show') && !menuContainer.contains(event.target)) {
+                menu.classList.remove('show');
+                btn.classList.remove('active');
+            }
+        });
+
+        function handleMenuAction(utterance) {
+            document.getElementById('headerDropdown').classList.remove('show');
+            document.getElementById('menuBtn').classList.remove('active');
+            if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
+                embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance);
+            }
+        }
+
+        function closePrivacyBanner() {
+            const banner = document.getElementById('privacyBanner');
+            if (banner) banner.style.display = 'none';
+        }
     </script>
-    
-    <script type='text/javascript' src='https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878/assets/js/bootstrap.min.js' onload='onScriptLoaded()'></script>
 
 </body>
 </html>
