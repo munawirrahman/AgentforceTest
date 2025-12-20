@@ -58,20 +58,15 @@
 
         /* --- 2. SIDEBAR TOGGLE BUTTON --- */
         .sidebar-toggle {
-            /* Displayed by default */
             display: flex; 
-            
             position: absolute;
             top: 50%;
             right: 0; 
             transform: translateY(-50%);
             z-index: 60; 
-            
-            /* Sizing */
             width: 40px; 
             min-height: 60px;
             padding: 10px 0;
-
             background: var(--brand-dark);
             color: white;
             border: 1px solid #1e293b;
@@ -79,8 +74,6 @@
             border-radius: 8px 0 0 8px;
             cursor: pointer;
             transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-            
-            /* Layout for vertical text */
             flex-direction: column;
             align-items: center;
             justify-content: center;
@@ -93,7 +86,6 @@
             color: var(--brand-accent);
         }
 
-        /* Text Styling (Vertical Mode) */
         .sidebar-toggle .toggle-text {
             writing-mode: vertical-rl;
             text-orientation: mixed;
@@ -104,17 +96,14 @@
             margin-bottom: 5px;
         }
 
-        /* STATE: Chat is OPEN (Button moves left) */
         .sidebar-toggle.chat-open {
             right: var(--chat-width-normal);
         }
         
-        /* STATE: Chat is EXPANDED (Button moves further left) */
         .sidebar-toggle.chat-open.expanded {
             right: var(--chat-width-expanded);
         }
 
-        /* Hide text when chat is OPEN */
         .sidebar-toggle.chat-open .toggle-text {
             display: none;
         }
@@ -124,10 +113,8 @@
             height: 60px;
         }
 
-        /* Icon Switching */
         .sidebar-toggle .icon-maximize { display: block; }
         .sidebar-toggle .icon-minimize { display: none; }
-
         .sidebar-toggle.chat-open .icon-maximize { display: none; }
         .sidebar-toggle.chat-open .icon-minimize { display: block; }
 
@@ -393,7 +380,9 @@
     <script type='text/javascript'>
         
         let isExpanded = false;
-        let isInitialized = false; 
+        let isInitialized = false;
+        // NEW FLAG: Used to queue a launchChat request
+        let pendingLaunch = false; 
 
         // --- SESSION MANAGEMENT ---
         const SESSION_KEY = 'apex_chat_session_start';
@@ -404,10 +393,9 @@
             if (!storedTime) return 'NEW';
 
             const now = new Date().getTime();
-            const elapsed = (now - parseInt(storedTime)) / (1000 * 60); // minutes
+            const elapsed = (now - parseInt(storedTime)) / (1000 * 60); 
 
             if (elapsed > SESSION_TIMEOUT_MINUTES) {
-                // Session expired
                 localStorage.removeItem(SESSION_KEY);
                 return 'NEW';
             }
@@ -429,9 +417,26 @@
             }
         });
 
-        // --- READY LISTENER ---
+        // --- IMPORTANT: READY EVENT LISTENER ---
+        // This event fires when Salesforce scripts are fully loaded and ready to accept API calls.
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
             console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
+            
+            // If we have a pending launch request (from continuation), execute it now.
+            if (pendingLaunch) {
+                console.log("[DEBUG] Found pending launch request. Executing launchChat()...");
+                
+                if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
+                    embeddedservice_bootstrap.utilAPI.launchChat()
+                        .then(() => {
+                            console.log("[DEBUG] launchChat success.");
+                            pendingLaunch = false; // Reset flag
+                        })
+                        .catch(e => console.error("[DEBUG] launchChat failed inside Ready Listener:", e));
+                } else {
+                    console.error("[DEBUG] API still not defined even after Ready event.");
+                }
+            }
         });
 
         // --- UI LOGIC: OPEN/CLOSE ---
@@ -463,26 +468,16 @@
             if (!isInitialized) {
                 console.log(`[DEBUG] Initializing. Session Status: ${sessionStatus}`);
                 
-                // Initialize the framework
+                // If it's a "CONTINUE" session, set flag to True so the Event Listener knows to launch chat.
+                if (sessionStatus === 'CONTINUE') {
+                    pendingLaunch = true; 
+                }
+
                 initEmbeddedMessaging();
                 isInitialized = true;
                 
-                // Track session
                 startSessionTracking();
                 toggleText.innerText = "Continue Chatting";
-
-                // If it's a "CONTINUE" session, we need to force the chat widget to re-render properly
-                if (sessionStatus === 'CONTINUE') {
-                    // Slight delay to ensure init completes before calling launch
-                    setTimeout(() => {
-                        if (embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
-                            console.log("[DEBUG] Triggering launchChat() for continuity...");
-                            embeddedservice_bootstrap.utilAPI.launchChat()
-                                .then(() => console.log("[DEBUG] launchChat success."))
-                                .catch(e => console.error("[DEBUG] launchChat failed:", e));
-                        }
-                    }, 500); 
-                }
 
                 updateSidebarState(true);
                 
@@ -492,8 +487,8 @@
                     updateSidebarState(false);
                 } else {
                     updateSidebarState(true);
-                    
-                    // Optional: Call launchChat again just to be safe if it was minimized
+                    // If reopening an already initialized chat, launchChat is usually safe to call directly 
+                    // because the script is already loaded.
                     if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.launchChat) {
                          embeddedservice_bootstrap.utilAPI.launchChat();
                     }
