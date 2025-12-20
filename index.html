@@ -540,7 +540,9 @@
                 if (isRestoredSession) {
                     console.log("[DEBUG] Config: Floating (Restored Session)");
                     embeddedservice_bootstrap.settings.displayMode = 'floating';
-                    embeddedservice_bootstrap.settings.targetElement = ''; 
+                    // We set this to document.body to ensure the script has a valid valid DOM element to attach to.
+                    // Setting this to '' (empty string) will cause a TypeError.
+                    embeddedservice_bootstrap.settings.targetElement = document.body; 
                 } else {
                     console.log("[DEBUG] Config: Inline (New Session)");
                     embeddedservice_bootstrap.settings.displayMode = 'inline';
