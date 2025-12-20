@@ -56,7 +56,7 @@
         h1 { font-size: 3.5rem; line-height: 1.1; margin-bottom: 1.5rem; color: white; }
         p.subtitle { font-size: 1.25rem; color: #94a3b8; margin-bottom: 2rem; }
 
-        /* --- CTA BUTTON --- */
+        /* --- CTA BUTTON (Updated for Continuity) --- */
         .cta-btn {
             background-color: var(--brand-accent);
             color: var(--brand-dark);
@@ -98,7 +98,7 @@
             top: 50%;
             right: 0; 
             transform: translateY(-50%);
-            z-index: 60; /* Must be higher than chat wrapper */
+            z-index: 60; 
             
             /* Sizing */
             width: 40px; 
@@ -121,7 +121,6 @@
             box-shadow: -2px 0 10px rgba(0,0,0,0.2);
         }
 
-        /* Active class added via JS to reveal it */
         .sidebar-toggle.active {
             display: flex;
         }
@@ -152,12 +151,11 @@
             right: var(--chat-width-expanded);
         }
 
-        /* Hide text when chat is OPEN to keep it clean */
+        /* Hide text when chat is OPEN */
         .sidebar-toggle.chat-open .toggle-text {
             display: none;
         }
         
-        /* Adjust height when no text is shown */
         .sidebar-toggle.chat-open {
             min-height: 40px; 
             height: 60px;
@@ -381,10 +379,10 @@
 
         <div class="content-panel">
             <h1>Experience the<br>Future of Driving.</h1>
-            <p class="subtitle">Click Launch Chat to talk with our agent.</p>
+            <p class="subtitle">Welcome back. Continue where you left off.</p>
             
             <button class="cta-btn" id="launchChatBtn" onclick="launchChatCTA()">
-                <span>Launch Chat</span>
+                <span>Continue Chatting</span>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
             </button>
         </div>
@@ -438,43 +436,11 @@
         
         let isExpanded = false;
         let isInitialized = false; 
-        let currentJwt = null;
-        let currentConversationId = null;
 
-        // --- 1. DEBUG: CATCH-ALL MESSAGE LISTENER ---
-        window.addEventListener('message', (event) => {
-            if (event.origin && event.origin.includes('https://storm-555fc987410410.my.site.com')) {
-                if (event.data && event.data.type === 'web_storage') {
-                    if (event.data.payload && event.data.payload) {
-                        currentJwt = event.data.payload;
-                        console.log(">> Listener caught JWT:", currentJwt);
-                    }
-                }
-            }
-        });
-
-        // --- 2. DEBUG: CONVERSATION LISTENER ---
-        window.addEventListener('onEmbeddedMessagingConversationParticipantChanged', (event) => {
-            if (event.detail && event.detail.conversationId) {
-                currentConversationId = event.detail.conversationId;
-                console.log(">> Listener caught Conversation ID:", currentConversationId);
-            }
-        });
-
-        // --- 3. READY LISTENER ---
+        // --- READY LISTENER ---
         window.addEventListener('onEmbeddedMessagingReady', (event) => {
             console.log("[DEBUG] Event: onEmbeddedMessagingReady fired.");
         });
-
-        // --- 4. MANUAL DEBUG HELPER ---
-        window.printChatDebug = function() {
-            console.table({
-                "Initialized": isInitialized,
-                "JWT": currentJwt || "Not Captured",
-                "Conversation ID": currentConversationId || "Not Captured",
-                "Ready State": document.readyState
-            });
-        }
 
         // --- UI LOGIC: OPEN/CLOSE ---
         
@@ -499,7 +465,7 @@
         }
 
         function launchChatCTA() {
-            console.log("[DEBUG] Launch Chat clicked.");
+            console.log("[DEBUG] Continue Chatting clicked.");
             
             // 1. Disable the Launch Button
             document.getElementById('launchChatBtn').disabled = true;
@@ -512,7 +478,7 @@
             
             // 4. Init if needed
             if (!isInitialized) {
-                console.log("[DEBUG] First interaction detected. Initializing Embedded Messaging...");
+                console.log("[DEBUG] Initializing Embedded Messaging...");
                 initEmbeddedMessaging();
                 isInitialized = true;
             }
@@ -534,14 +500,13 @@
         function handleChatClose() {
             console.log("--- End Conversation Button Clicked ---");
 
-            // Logic to dispatch the event (No Page Reload, No UI Hide)
+            // Dispatch event to Salesforce iframe to end session
             let cwcIframe = document.getElementById('embeddedMessagingFrame');
             if (cwcIframe) {
                 cwcIframe.contentWindow.postMessage({
                     "eventName": "END_CONVERSATION"
                 },
-                // NOTE: targetOrigin must contain ONLY the protocol + domain.
-                // The browser will block if you include the path.
+                // Target Origin: Protocol + Domain only
                 "https://storm-555fc987410410.my.site.com"
                 );
                 console.log('📤 postMessage sent to iframe');
@@ -557,10 +522,10 @@
             isExpanded = !isExpanded;
             if (isExpanded) {
                 wrapper.classList.add('expanded');
-                toggle.classList.add('expanded'); // Move button to 50vw
+                toggle.classList.add('expanded'); 
             } else {
                 wrapper.classList.remove('expanded');
-                toggle.classList.remove('expanded'); // Move button back to 380px
+                toggle.classList.remove('expanded'); 
             }
         }
 
