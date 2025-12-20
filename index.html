@@ -426,7 +426,6 @@
                 console.log("[DEBUG] Session detected. Pre-loading script for continuity.");
                 toggleText.innerText = "Continue Chatting";
                 
-                // Mark as restored so initEmbeddedMessaging knows NOT to set displayMode
                 isRestoredSession = true;
 
                 loadSalesforceScript();
@@ -472,7 +471,7 @@
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction. Loading script...");
                 
-                // This is a NEW session, so isRestoredSession stays false.
+                // This is a NEW session
                 loadSalesforceScript(); 
                 isInitialized = true;
                 startSessionTracking(); 
@@ -502,7 +501,6 @@
             const toggleText = document.getElementById('toggleTextLabel');
             if(toggleText) toggleText.innerText = "Start Chatting";
             
-            // Reset restored flag just in case
             isRestoredSession = false;
 
             let cwcIframe = document.getElementById('embeddedMessagingFrame');
@@ -536,19 +534,18 @@
                 }
 
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
-                
-                // --- LOGIC CHANGE ---
-                // Only set displayMode='inline' if this is a NEW session.
-                // On continuation, we skip it to prevent overriding the restored state.
-                if (!isRestoredSession) {
-                    console.log("[DEBUG] Setting displayMode = 'inline' (New Session)");
-                    embeddedservice_bootstrap.settings.displayMode = 'inline';
-                } else {
-                    console.log("[DEBUG] Skipping displayMode (Restored Session)");
-                }
-                
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
-                embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
+
+                // --- CONFIG LOGIC ---
+                if (isRestoredSession) {
+                    console.log("[DEBUG] Config: Floating (Restored Session)");
+                    embeddedservice_bootstrap.settings.displayMode = 'floating';
+                    embeddedservice_bootstrap.settings.targetElement = ''; 
+                } else {
+                    console.log("[DEBUG] Config: Inline (New Session)");
+                    embeddedservice_bootstrap.settings.displayMode = 'inline';
+                    embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
+                }
 
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
