@@ -532,31 +532,24 @@
         }
 
         function handleChatClose() {
-            console.log("--- Closing Chat via PostMessage ---");
+            console.log("--- Closing Chat via PostMessage (No Reload) ---");
             
-            // 1. Define the target origin (Domain only)
-            // User provided URL: https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878
             const targetOrigin = "https://storm-555fc987410410.my.site.com";
-
-            // 2. Find the iframe inside the chat target div
             const chatContainer = document.getElementById('salesforce-chat-target');
             const iframe = chatContainer ? chatContainer.querySelector('iframe') : null;
 
             if (iframe && iframe.contentWindow) {
-                // 3. Post the CLOSE_CONVERSATION event
+                // Send CLOSE_CONVERSATION event to end the session
                 iframe.contentWindow.postMessage({
                     type: 'CLOSE_CONVERSATION'
                 }, targetOrigin);
                 
                 console.log("✅ CLOSE_CONVERSATION event sent to iframe.");
                 
-                // 4. Reload page after a short delay to reset the session visuals
-                setTimeout(() => {
-                    window.location.reload();
-                }, 200); 
+                // NOTE: We do NOT hide the window or reload the page here.
+                // The chat window stays open, but the session inside the iframe should end.
             } else {
-                console.warn("⚠️ Chat iframe not found. Reloading page immediately.");
-                window.location.reload();
+                console.warn("⚠️ Chat iframe not found.");
             }
         }
 
