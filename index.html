@@ -329,7 +329,7 @@
 
         <div class="content-panel">
             <h1>Experience the<br>Future of Driving.</h1>
-            <p class="subtitle">Welcome back. Continue where you left off.</p>
+            <p class="subtitle">Click "Start Chatting" to begin.</p>
         </div>
     </div>
 
@@ -381,31 +381,8 @@
         
         let isExpanded = false;
         let isInitialized = false;
-        let isRestoredSession = false;
 
-        // --- SESSION MANAGEMENT ---
-        const SESSION_KEY = 'apex_chat_session_start';
-        const SESSION_TIMEOUT_MINUTES = 30;
-
-        function checkSessionStatus() {
-            const storedTime = localStorage.getItem(SESSION_KEY);
-            if (!storedTime) return 'NEW';
-
-            const now = new Date().getTime();
-            const elapsed = (now - parseInt(storedTime)) / (1000 * 60); 
-
-            if (elapsed > SESSION_TIMEOUT_MINUTES) {
-                localStorage.removeItem(SESSION_KEY);
-                return 'NEW';
-            }
-            return 'CONTINUE';
-        }
-
-        function startSessionTracking() {
-            localStorage.setItem(SESSION_KEY, new Date().getTime().toString());
-        }
-
-        // --- DYNAMIC SCRIPT INJECTION ---
+        // --- DYNAMIC SCRIPT INJECTION HELPER ---
         function loadSalesforceScript() {
             console.log("[DEBUG] Injecting Salesforce script...");
             const script = document.createElement('script');
@@ -414,33 +391,6 @@
             script.onload = initEmbeddedMessaging; 
             document.body.appendChild(script);
         }
-
-        // --- ON LOAD: CHECK SESSION & PRELOAD IF NEEDED ---
-        document.addEventListener("DOMContentLoaded", () => {
-            const status = checkSessionStatus();
-            const toggleText = document.getElementById('toggleTextLabel');
-            
-            if (status === 'CONTINUE') {
-                console.log("[DEBUG] Session detected. Pre-loading script for continuity.");
-                toggleText.innerText = "Continue Chatting";
-                
-                // Flag to set specific settings in initEmbeddedMessaging
-                isRestoredSession = true;
-
-                loadSalesforceScript();
-                isInitialized = true; 
-                
-            } else {
-                console.log("[DEBUG] New session. Waiting for user to click Start.");
-                toggleText.innerText = "Start Chatting";
-                isRestoredSession = false;
-            }
-        });
-
-        // --- READY EVENT LISTENER ---
-        window.addEventListener('onEmbeddedMessagingReady', (event) => {
-            console.log("[DEBUG] Event: onEmbeddedMessagingReady fired. API is now available.");
-        });
 
         // --- UI LOGIC ---
         function updateSidebarState(isVisible) {
@@ -470,17 +420,15 @@
             if (!isInitialized) {
                 console.log("[DEBUG] First interaction. Loading script...");
                 
-                // This is a NEW session
                 loadSalesforceScript(); 
                 isInitialized = true;
-                startSessionTracking(); 
                 toggleText.innerText = "Continue Chatting";
                 
                 updateSidebarState(true);
             } 
             // Case 2: Already Initialized
             else {
-                // Just toggle visibility. No API calls needed.
+                // Just toggle visibility. The iframe maintains its own state.
                 if (isVisible) {
                     updateSidebarState(false);
                 } else {
@@ -491,13 +439,11 @@
 
         function handleChatClose() {
             console.log("--- End Conversation ---");
-            localStorage.removeItem(SESSION_KEY);
             
-            const toggleText = document.getElementById('toggleTextLabel');
-            if(toggleText) toggleText.innerText = "Start Chatting";
+            // Note: We intentionally do NOT reset isInitialized here. 
+            // Once the script is loaded, we cannot easily unload it without a page refresh.
+            // Sending the END signal clears the session inside the iframe.
             
-            isRestoredSession = false;
-
             let cwcIframe = document.getElementById('embeddedMessagingFrame');
             if (cwcIframe) {
                 cwcIframe.contentWindow.postMessage({
@@ -521,7 +467,7 @@
 
         // --- GLOBAL INIT FUNCTION ---
         window.initEmbeddedMessaging = function() {
-            console.log("[DEBUG] initEmbeddedMessaging called. isRestoredSession:", isRestoredSession);
+            console.log("[DEBUG] initEmbeddedMessaging called.");
             try {
                 if (!window.embeddedservice_bootstrap) {
                     console.error("❌ CRITICAL: Bootstrap undefined.");
@@ -531,17 +477,9 @@
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
 
-                // --- CONFIG LOGIC ---
-                if (isRestoredSession) {
-                    console.log("[DEBUG] Config: Floating (Restored Session)");
-                    embeddedservice_bootstrap.settings.displayMode = 'floating';
-                    // We must target 'document.body' for floating mode to work correctly
-                    embeddedservice_bootstrap.settings.targetElement = document.body; 
-                } else {
-                    console.log("[DEBUG] Config: Inline (New Session)");
-                    embeddedservice_bootstrap.settings.displayMode = 'inline';
-                    embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
-                }
+                // Always Inline for this simplified version
+                embeddedservice_bootstrap.settings.displayMode = 'inline';
+                embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
 
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
