@@ -532,24 +532,21 @@
         }
 
         function handleChatClose() {
-            console.log("--- Closing Chat via PostMessage (No Reload) ---");
-            
-            const targetOrigin = "https://storm-555fc987410410.my.site.com";
-            const chatContainer = document.getElementById('salesforce-chat-target');
-            const iframe = chatContainer ? chatContainer.querySelector('iframe') : null;
+            console.log("--- End Conversation Button Clicked ---");
 
-            if (iframe && iframe.contentWindow) {
-                // Send CLOSE_CONVERSATION event to end the session
-                iframe.contentWindow.postMessage({
-                    type: 'CLOSE_CONVERSATION'
-                }, targetOrigin);
-                
-                console.log("✅ CLOSE_CONVERSATION event sent to iframe.");
-                
-                // NOTE: We do NOT hide the window or reload the page here.
-                // The chat window stays open, but the session inside the iframe should end.
+            // Logic to dispatch the event (No Page Reload, No UI Hide)
+            let cwcIframe = document.getElementById('embeddedMessagingFrame');
+            if (cwcIframe) {
+                cwcIframe.contentWindow.postMessage({
+                    "eventName": "END_CONVERSATION"
+                },
+                // NOTE: targetOrigin must contain ONLY the protocol + domain.
+                // The browser will block if you include the path.
+                "https://storm-555fc987410410.my.site.com"
+                );
+                console.log('📤 postMessage sent to iframe');
             } else {
-                console.warn("⚠️ Chat iframe not found.");
+                console.log('⚠️ embeddedMessagingFrame iframe not found');
             }
         }
 
