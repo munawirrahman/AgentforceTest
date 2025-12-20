@@ -539,10 +539,8 @@
                 // --- CONFIG LOGIC ---
                 if (isRestoredSession) {
                     console.log("[DEBUG] Config: Floating (Restored Session)");
-                    embeddedservice_bootstrap.settings.displayMode = 'floating';
-                    // We set this to document.body to ensure the script has a valid valid DOM element to attach to.
-                    // Setting this to '' (empty string) will cause a TypeError.
-                    embeddedservice_bootstrap.settings.targetElement = document.body; 
+                    embeddedservice_bootstrap.settings.displayMode = 'inline';
+                    embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
                 } else {
                     console.log("[DEBUG] Config: Inline (New Session)");
                     embeddedservice_bootstrap.settings.displayMode = 'inline';
