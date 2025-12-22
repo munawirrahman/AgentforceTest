@@ -535,6 +535,13 @@
 
         function handleMenuAction(utterance) {
             closeMenu(); // Close menu and overlay
+
+            // FIX: Check if the global variable exists before checking its properties
+            if (typeof embeddedservice_bootstrap === 'undefined') {
+                console.warn("Chat not initialized yet");
+                return;
+            }
+
             if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance);
             }
