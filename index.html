@@ -36,6 +36,7 @@
             overflow-y: auto; 
             position: relative;
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            z-index: 1; /* Ensure content is below overlay */
         }
 
         header.global-header {
@@ -63,7 +64,7 @@
             top: 50%;
             right: 0; 
             transform: translateY(-50%);
-            z-index: 60; 
+            z-index: 60; /* Above Chat Wrapper */
             width: 40px; 
             min-height: 60px;
             padding: 10px 0;
@@ -129,7 +130,7 @@
             display: flex;        
             flex-direction: column; 
             position: relative;
-            z-index: 50;
+            z-index: 50; /* Primary Z-Index Layer */
             overflow: hidden; 
             transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
         }
@@ -222,15 +223,15 @@
             fill: currentColor; 
         }
 
-        /* --- MENU OVERLAY (The Fix) --- */
-        /* This transparent layer sits behind the menu but above the iframe */
+        /* --- MENU OVERLAY (FIXED) --- */
+        /* Z-Index changed from 90 to 45 so it sits BEHIND the Chat Wrapper (Z=50) */
         .menu-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            z-index: 90; /* Below Dropdown (100) but above everything else */
+            z-index: 45; /* CORRECTED: Lower than Chat Wrapper */
             display: none;
             cursor: default;
         }
@@ -252,7 +253,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
             padding: 8px 0;
             display: none; 
-            z-index: 100; /* Highest Z-Index */
+            z-index: 100; /* Relative to parent, so it sits on top of header */
             border: 1px solid #e2e8f0;
             transform-origin: top right;
             animation: fadeIn 0.15s ease-out;
@@ -535,8 +536,8 @@
 
         function handleMenuAction(utterance) {
             closeMenu(); // Close menu and overlay
-
-            // FIX: Check if the global variable exists before checking its properties
+            
+            // Check if global var exists
             if (typeof embeddedservice_bootstrap === 'undefined') {
                 console.warn("Chat not initialized yet");
                 return;
