@@ -383,30 +383,25 @@
         
         let isExpanded = false;
         let isInitialized = false;
-
-        // --- NEW: Flag to ensure we only send the context once ---
         let hasSentConversationContext = false;
 
-        // --- NEW: Listener for EmbeddedMessageSent ---
+        // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received the onEmbeddedMessageSent event…");
             console.log("Event detail: ", event.detail);
 
-            // Execute this logic only on the FIRST received event
             if (!hasSentConversationContext) {
                 let cwcIframe = document.getElementById('embeddedMessagingFrame');
                 if (cwcIframe) {
-                    // Send postMessage
+                    // *** UPDATED EVENT NAME HERE ***
                     cwcIframe.contentWindow.postMessage({
-                        "eventName": "PostLocalStorage",
+                        "eventName": "POST_CONVERSATION_ID_TO_LOCAL_STORAGE",
                         "data": { "conversationId": event.detail.conversationId }
                     },
-                    "https://storm-555fc987410410.my.site.com" // Target origin for security
+                    "https://storm-555fc987410410.my.site.com" 
                     );
                     
-                    console.log('📤 postMessage (PostLocalStorage) sent to iframe');
-                    
-                    // Update flag so this doesn't run again for this session
+                    console.log('📤 postMessage (POST_CONVERSATION_ID_TO_LOCAL_STORAGE) sent to iframe');
                     hasSentConversationContext = true;
                 } else {
                     console.log('⚠️ embeddedMessagingFrame iframe not found');
@@ -478,9 +473,6 @@
                     "eventName": "END_CONVERSATION"
                 }, "https://storm-555fc987410410.my.site.com");
             }
-            
-            // Optional: Reset context flag if closing conversation resets the iframe
-            // hasSentConversationContext = false; 
         }
 
         function toggleChatExpand() {
@@ -577,8 +569,6 @@
 
         // The Magic Fix for Iframes:
         window.addEventListener('blur', function() {
-            // When we click the iframe, the main window loses focus (blurs).
-            // We interpret this as a "click outside the menu".
             setTimeout(closeMenu, 100); 
         });
 
