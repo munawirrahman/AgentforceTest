@@ -384,6 +384,37 @@
         let isExpanded = false;
         let isInitialized = false;
 
+        // --- NEW: Flag to ensure we only send the context once ---
+        let hasSentConversationContext = false;
+
+        // --- NEW: Listener for EmbeddedMessageSent ---
+        window.addEventListener("onEmbeddedMessageSent", (event) => {
+            console.log("Received the onEmbeddedMessageSent event…");
+            console.log("Event detail: ", event.detail);
+
+            // Execute this logic only on the FIRST received event
+            if (!hasSentConversationContext) {
+                let cwcIframe = document.getElementById('embeddedMessagingFrame');
+                if (cwcIframe) {
+                    // Send postMessage
+                    cwcIframe.contentWindow.postMessage({
+                        "eventName": "PostLocalStorage",
+                        "data": { "conversationId": event.detail.conversationId }
+                    },
+                    "https://storm-555fc987410410.my.site.com" // Target origin for security
+                    );
+                    
+                    console.log('📤 postMessage (PostLocalStorage) sent to iframe');
+                    
+                    // Update flag so this doesn't run again for this session
+                    hasSentConversationContext = true;
+                } else {
+                    console.log('⚠️ embeddedMessagingFrame iframe not found');
+                }
+            }
+        });
+
+
         // --- DYNAMIC SCRIPT INJECTION HELPER ---
         function loadSalesforceScript() {
             console.log("[DEBUG] Injecting Salesforce script...");
@@ -447,6 +478,9 @@
                     "eventName": "END_CONVERSATION"
                 }, "https://storm-555fc987410410.my.site.com");
             }
+            
+            // Optional: Reset context flag if closing conversation resets the iframe
+            // hasSentConversationContext = false; 
         }
 
         function toggleChatExpand() {
