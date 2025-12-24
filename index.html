@@ -373,7 +373,7 @@
             display: flex;
             flex-direction: row; 
             gap: 10px;
-            align-items: center; /* FIX: Centers buttons vertically relative to text area */
+            align-items: center; 
             flex-shrink: 0;
             position: relative;
             z-index: 45;
@@ -443,7 +443,6 @@
             line-height: 1.4;
         }
 
-        /* FIX: Ensure lists have visible markers */
         .rich-input ol, .rich-input ul {
             padding-inline-start: 24px;
             margin-block: 5px;
@@ -459,10 +458,10 @@
             display: block;
         }
 
-        /* FIX: Send Button Styling */
+        /* --- SEND BUTTON STYLES --- */
         .send-btn {
-            background: transparent; /* No Background */
-            color: var(--brand-primary); /* Blue Icon */
+            background: transparent; 
+            color: var(--brand-primary); 
             border: none;
             border-radius: 8px;
             width: 44px;
@@ -476,6 +475,16 @@
         }
 
         .send-btn:hover { background: #f1f5f9; }
+
+        /* DISABLED STATE FOR SEND BUTTON */
+        .send-btn:disabled {
+            color: #cbd5e1; /* Grayed out icon */
+            cursor: not-allowed;
+            background: transparent;
+        }
+        .send-btn:disabled:hover {
+            background: transparent;
+        }
 
     </style>
 </head>
@@ -566,7 +575,7 @@
                      onmouseup="detectState()" onkeyup="detectState()" onclick="detectState()"></div>
             </div>
 
-            <button class="send-btn" onclick="handleCustomSend()" title="Send">
+            <button class="send-btn" onclick="handleCustomSend()" title="Send" disabled>
                 <svg class="icon-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
         </div>
@@ -582,6 +591,21 @@
         // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received the onEmbeddedMessageSent event…");
+            console.log("Details:", event.detail);
+
+            // --- SEND BUTTON LOGIC (TURN TAKING) ---
+            const role = event.detail.conversationEntry.sender.role;
+            const btn = document.querySelector('.send-btn');
+
+            if (role === 'EndUser') {
+                // User Sent a message -> Disable button (Wait for bot)
+                btn.disabled = true;
+            } else if (role === 'Chatbot' || role === 'Agent') {
+                // Bot Sent a message -> Enable button (User's turn)
+                btn.disabled = false;
+            }
+
+            // --- CONTEXT LOGIC ---
             if (!hasSentConversationContext) {
                 let cwcIframe = document.getElementById('embeddedMessagingFrame');
                 if (cwcIframe) {
@@ -693,6 +717,11 @@
 
         function handleMenuAction(utterance) {
             closeMenu(); 
+            // Only send if button is enabled (User's turn)
+            if(document.querySelector('.send-btn').disabled) {
+                console.warn("Please wait for the agent to reply.");
+                return;
+            }
             if(embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance);
             }
@@ -726,6 +755,9 @@
         }
 
         function handleCustomSend() {
+            // Check if disabled
+            if (document.querySelector('.send-btn').disabled) return;
+
             const editor = document.getElementById('richTextEditor');
             const htmlContent = editor.innerHTML;
             const textContent = editor.innerText.trim();
