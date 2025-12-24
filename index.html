@@ -214,11 +214,10 @@
         }
         
         .icon-btn:hover, .icon-btn.active { 
-            background: rgba(0,0,0,0.05); /* Lighter hover for white bg contexts */
+            background: rgba(0,0,0,0.05); 
             color: var(--brand-primary);
         }
         
-        /* Specific header button override */
         .chat-header .icon-btn { color: var(--text-muted); }
         .chat-header .icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
 
@@ -234,7 +233,7 @@
 
         .dropdown-menu {
             position: absolute;
-            bottom: 120%; /* Opens UPWARDS since it's in footer */
+            bottom: 120%; 
             left: 0;
             width: 240px; 
             background: white;
@@ -372,9 +371,9 @@
             padding: 0.8rem;
             border-top: 1px solid #e2e8f0;
             display: flex;
-            flex-direction: row; /* Horizontal Layout */
+            flex-direction: row; 
             gap: 10px;
-            align-items: flex-end; /* Align bottom */
+            align-items: center; /* FIX: Centers buttons vertically relative to text area */
             flex-shrink: 0;
             position: relative;
             z-index: 45;
@@ -387,7 +386,7 @@
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            flex: 1; /* Takes remaining space */
+            flex: 1; 
         }
 
         .toolbar {
@@ -418,7 +417,6 @@
             color: var(--brand-primary);
         }
 
-        /* STATE DETECTION: Active Class */
         .tool-btn.active-state {
             background: var(--brand-primary);
             color: white;
@@ -445,6 +443,15 @@
             line-height: 1.4;
         }
 
+        /* FIX: Ensure lists have visible markers */
+        .rich-input ol, .rich-input ul {
+            padding-inline-start: 24px;
+            margin-block: 5px;
+        }
+        .rich-input li {
+            padding-left: 2px;
+        }
+
         .rich-input:empty:before {
             content: attr(placeholder);
             color: #94a3b8;
@@ -452,24 +459,23 @@
             display: block;
         }
 
-        /* Send Button (Right Side, Icon Only) */
+        /* FIX: Send Button Styling */
         .send-btn {
-            background: var(--brand-primary);
-            color: white;
+            background: transparent; /* No Background */
+            color: var(--brand-primary); /* Blue Icon */
             border: none;
             border-radius: 8px;
-            width: 44px; /* Square(ish) */
-            height: 44px; /* Matches roughly input height */
+            width: 44px;
+            height: 44px; 
             cursor: pointer;
             transition: background 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            margin-bottom: 2px; /* Alignment tweak */
         }
 
-        .send-btn:hover { background: var(--brand-accent); }
+        .send-btn:hover { background: #f1f5f9; }
 
     </style>
 </head>
@@ -571,7 +577,7 @@
         let isExpanded = false;
         let isInitialized = false;
         let hasSentConversationContext = false;
-        let sendOnEnter = true; // Default
+        let sendOnEnter = true; 
 
         // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
@@ -692,68 +698,54 @@
             }
         }
         
-        // --- ENTER TO SEND TOGGLE ---
         function toggleEnterSend(e) {
-            e.stopPropagation(); // Don't close menu when clicking toggle
+            e.stopPropagation(); 
             const checkbox = document.getElementById('enterToSendCheck');
-            // Toggle value is handled by checkbox default behavior, we just read it
             setTimeout(() => {
                 sendOnEnter = checkbox.checked;
-                console.log("Send on Enter is now:", sendOnEnter);
             }, 50);
         }
 
         // --- CUSTOM EDITOR LOGIC ---
         
-        // 1. Format Doc
         function formatDoc(cmd, value = null) {
             event.preventDefault(); 
             document.execCommand(cmd, false, value);
             document.getElementById('richTextEditor').focus();
-            detectState(); // Check state immediately after applying
+            detectState(); 
         }
 
-        // 2. STATE DETECTION (Focus Buttons)
         function detectState() {
             const buttons = document.querySelectorAll('.tool-btn[data-cmd]');
             buttons.forEach(btn => {
                 const cmd = btn.getAttribute('data-cmd');
-                // Check if the current selection has this formatting applied
                 const isActive = document.queryCommandState(cmd);
-                
-                if (isActive) {
-                    btn.classList.add('active-state');
-                } else {
-                    btn.classList.remove('active-state');
-                }
+                if (isActive) btn.classList.add('active-state');
+                else btn.classList.remove('active-state');
             });
         }
 
-        // 3. Send Logic
         function handleCustomSend() {
             const editor = document.getElementById('richTextEditor');
             const htmlContent = editor.innerHTML;
             const textContent = editor.innerText.trim();
-            // Basic check to see if it's empty
             if (!textContent && !htmlContent.includes('<')) return;
 
             if (typeof embeddedservice_bootstrap !== 'undefined' && embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(htmlContent);
-                editor.innerHTML = ''; // Clear
-                detectState(); // Reset buttons
+                editor.innerHTML = ''; 
+                detectState(); 
             } else {
                 console.warn("Salesforce Chat API is not ready.");
             }
         }
 
-        // 4. Handle Enter Key
         document.getElementById('richTextEditor').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 if (sendOnEnter && !e.shiftKey) {
                     e.preventDefault();
                     handleCustomSend();
                 }
-                // If sendOnEnter is false, or Shift is held, let default happen (new line)
             }
         });
 
@@ -761,7 +753,6 @@
             document.getElementById('privacyBanner').style.display = 'none';
         }
 
-        // Close menu on outside click
         document.addEventListener('click', function(event) {
             const menuContainer = document.getElementById('menuContainer');
             if (menuContainer && !menuContainer.contains(event.target)) {
@@ -769,7 +760,6 @@
             }
         });
         
-        // iframe blur handling
         window.addEventListener('blur', function() {
             setTimeout(closeMenu, 100); 
         });
