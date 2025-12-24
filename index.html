@@ -478,7 +478,7 @@
 
         /* DISABLED STATE FOR SEND BUTTON */
         .send-btn:disabled {
-            color: #cbd5e1; /* Grayed out icon */
+            color: #cbd5e1; 
             cursor: not-allowed;
             background: transparent;
         }
@@ -591,7 +591,6 @@
         // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received the onEmbeddedMessageSent event…");
-            console.log("Details:", event.detail);
 
             // --- SEND BUTTON LOGIC (TURN TAKING) ---
             const role = event.detail.conversationEntry.sender.role;
@@ -717,7 +716,6 @@
 
         function handleMenuAction(utterance) {
             closeMenu(); 
-            // Only send if button is enabled (User's turn)
             if(document.querySelector('.send-btn').disabled) {
                 console.warn("Please wait for the agent to reply.");
                 return;
@@ -755,7 +753,6 @@
         }
 
         function handleCustomSend() {
-            // Check if disabled
             if (document.querySelector('.send-btn').disabled) return;
 
             const editor = document.getElementById('richTextEditor');
@@ -777,6 +774,40 @@
                 if (sendOnEnter && !e.shiftKey) {
                     e.preventDefault();
                     handleCustomSend();
+                }
+            }
+        });
+
+        // --- AUTO LIST LISTENER (1. and - ) ---
+        document.getElementById('richTextEditor').addEventListener('keyup', (e) => {
+            if (e.key === ' ') {
+                const sel = window.getSelection();
+                if(!sel.rangeCount) return;
+
+                const range = sel.getRangeAt(0);
+                const textNode = range.startContainer;
+
+                // Check if we are inside a text node
+                if (textNode.nodeType === 3) { 
+                    const text = textNode.textContent;
+                    const offset = range.startOffset;
+                    // Get text up to the cursor
+                    const textBefore = text.slice(0, offset);
+
+                    // BULLET: Check if typed "- " or "* "
+                    if (textBefore === '- ' || textBefore === '* ') {
+                        range.setStart(textNode, 0);
+                        range.setEnd(textNode, offset);
+                        range.deleteContents();
+                        document.execCommand('insertUnorderedList');
+                    }
+                    // NUMBER: Check if typed "1. "
+                    else if (textBefore === '1. ') {
+                        range.setStart(textNode, 0);
+                        range.setEnd(textNode, offset);
+                        range.deleteContents();
+                        document.execCommand('insertOrderedList');
+                    }
                 }
             }
         });
