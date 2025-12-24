@@ -599,18 +599,15 @@
 
         // --- SECURITY & LISTENER ---
         window.addEventListener('message', function (event) {
-            // 1. DEFINE ALLOWED ORIGINS (Security)
             const allowedOrigins = [
-                "https://storm-555fc987410410.my.site.com", // Your Salesforce Domain
-                "https://trusted-origin.com"                 // Add other trusted origins here
+                "https://storm-555fc987410410.my.site.com", 
+                "https://trusted-origin.com"                 
             ];
 
-            // 2. FILTER ORIGIN
             if (!allowedOrigins.includes(event.origin)) {
-                return; // Ignore invalid origins silently
+                return; 
             }
 
-            // 3. CHECK EVENT DATA
             if (event.data && event.data.eventName === "DISABLE_TEXT_INPUT") {
                 console.log("Received DISABLE_TEXT_INPUT signal", event.data);
 
@@ -618,12 +615,11 @@
                 const container = document.getElementById('editorContainer');
                 const btn = document.getElementById('sendBtn');
                 
-                // 4. PERFORM ACTION: Disable Input
+                // Disable Input
                 editor.contentEditable = "false";
                 container.classList.add('disabled');
                 btn.disabled = true;
 
-                // 5. UPDATE PLACEHOLDER (from detail)
                 if (event.data.detail && event.data.detail.placeholderText) {
                     editor.setAttribute('placeholder', event.data.detail.placeholderText);
                 }
@@ -636,11 +632,23 @@
 
             const role = event.detail.conversationEntry.sender.role;
             const btn = document.querySelector('.send-btn');
+            
+            // Elements to Re-enable
+            const editor = document.getElementById('richTextEditor');
+            const container = document.getElementById('editorContainer');
 
             if (role === 'EndUser') {
                 btn.disabled = true;
             } else if (role === 'Chatbot' || role === 'Agent') {
+                // 1. Enable Send Button
                 btn.disabled = false;
+                
+                // 2. Enable Text Area
+                editor.contentEditable = "true";
+                container.classList.remove('disabled');
+
+                // 3. Reset Placeholder
+                editor.setAttribute('placeholder', 'Type your message...');
             }
 
             // --- CONTEXT LOGIC ---
