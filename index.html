@@ -13,7 +13,7 @@
             --text-light: #f8fafc;
             --text-muted: #94a3b8;
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --chat-width-normal: 400px;
+            --chat-width-normal: 420px;
             --chat-width-expanded: 50vw; 
         }
 
@@ -214,9 +214,14 @@
         }
         
         .icon-btn:hover, .icon-btn.active { 
-            background: rgba(255,255,255,0.1); 
-            color: white;
+            background: rgba(0,0,0,0.05); /* Lighter hover for white bg contexts */
+            color: var(--brand-primary);
         }
+        
+        /* Specific header button override */
+        .chat-header .icon-btn { color: var(--text-muted); }
+        .chat-header .icon-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+
 
         .icon-svg { 
             width: 24px; 
@@ -229,17 +234,17 @@
 
         .dropdown-menu {
             position: absolute;
-            top: 120%; 
-            right: 0;
-            width: 220px; 
+            bottom: 120%; /* Opens UPWARDS since it's in footer */
+            left: 0;
+            width: 240px; 
             background: white;
             border-radius: 8px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
             padding: 8px 0;
             display: none; 
             z-index: 1000;
             border: 1px solid #e2e8f0;
-            transform-origin: top right;
+            transform-origin: bottom left;
             animation: fadeIn 0.15s ease-out;
             text-align: left;
         }
@@ -259,6 +264,47 @@
         }
 
         .menu-item:hover { background: #f1f5f9; color: var(--brand-primary); }
+        
+        /* Toggle Switch in Menu */
+        .menu-toggle-item {
+            padding: 12px 16px;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #64748b;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--brand-primary); }
+        input:checked + .slider:before { transform: translateX(14px); }
+
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.95); }
@@ -320,33 +366,34 @@
             overflow: hidden; 
         }
 
-        /* --- CUSTOM EDITOR STYLES (No Library) --- */
+        /* --- CUSTOM EDITOR FOOTER STYLES --- */
         .chat-footer {
             background: #fff;
-            padding: 0.5rem;
+            padding: 0.8rem;
             border-top: 1px solid #e2e8f0;
             display: flex;
-            gap: 8px;
-            flex-direction: column;
+            flex-direction: row; /* Horizontal Layout */
+            gap: 10px;
+            align-items: flex-end; /* Align bottom */
             flex-shrink: 0;
             position: relative;
             z-index: 45;
         }
 
         .editor-container {
-            border: 1px solid var(--brand-primary); /* Custom Brand Color */
+            border: 1px solid var(--brand-primary);
             border-radius: 8px;
             background: #fff;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            flex: 1;
+            flex: 1; /* Takes remaining space */
         }
 
         .toolbar {
             background: #f8fafc;
-            border-bottom: 1px solid var(--brand-primary); /* Custom Brand Color */
-            padding: 5px;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 4px;
             display: flex;
             flex-wrap: wrap;
             gap: 2px;
@@ -357,78 +404,69 @@
             border: none;
             border-radius: 4px;
             cursor: pointer;
-            width: 28px;
-            height: 28px;
+            width: 26px;
+            height: 26px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #64748b;
-            transition: all 0.2s;
+            transition: all 0.1s;
         }
 
         .tool-btn:hover {
             background: #e2e8f0;
-            color: var(--brand-primary); /* Custom Brand Color */
+            color: var(--brand-primary);
         }
 
-        .tool-btn svg {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
+        /* STATE DETECTION: Active Class */
+        .tool-btn.active-state {
+            background: var(--brand-primary);
+            color: white;
         }
+
+        .tool-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
         .separator {
             width: 1px;
             background: #cbd5e1;
             margin: 0 4px;
+            height: 16px;
+            align-self: center;
         }
 
         .rich-input {
-            padding: 12px;
-            min-height: 80px;
-            max-height: 200px;
+            padding: 10px;
+            min-height: 50px;
+            max-height: 150px;
             overflow-y: auto;
             outline: none;
             font-size: 14px;
             color: #334155;
-            line-height: 1.5;
+            line-height: 1.4;
         }
 
-        /* Placeholder Logic */
         .rich-input:empty:before {
             content: attr(placeholder);
             color: #94a3b8;
             pointer-events: none;
-            display: block; /* For Firefox */
+            display: block;
         }
 
-        /* Ensure images inside the editor fit */
-        .rich-input img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 4px;
-            margin: 5px 0;
-            border: 1px solid #e2e8f0;
-        }
-
-        .footer-actions {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 5px;
-        }
-
+        /* Send Button (Right Side, Icon Only) */
         .send-btn {
             background: var(--brand-primary);
             color: white;
             border: none;
-            border-radius: 6px;
-            padding: 8px 20px;
-            font-weight: 600;
+            border-radius: 8px;
+            width: 44px; /* Square(ish) */
+            height: 44px; /* Matches roughly input height */
             cursor: pointer;
             transition: background 0.2s;
             display: flex;
             align-items: center;
-            gap: 5px;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-bottom: 2px; /* Alignment tweak */
         }
 
         .send-btn:hover { background: var(--brand-accent); }
@@ -466,19 +504,6 @@
                     <svg class="icon-svg icon-expand" viewBox="0 0 24 24"><path d="M15 3l2.3 2.3-2.89 2.87 1.42 1.42L18.7 6.7 21 9V3zM3 9l2.3-2.3 2.87 2.89 1.42-1.42L6.7 5.3 9 3H3zM9 21l-2.3-2.3 2.89-2.87-1.42-1.42L5.3 17.3 3 15v6zM21 15l-2.3 2.3-2.87-2.89-1.42 1.42 2.89 2.87L15 21h6z"/></svg>
                     <svg class="icon-svg icon-collapse" viewBox="0 0 24 24"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-14v3h3v2h-5V5h2z"/></svg>
                 </button>
-
-                <div class="menu-container" id="menuContainer">
-                    <button class="icon-btn" id="menuBtn" onclick="toggleMenu(event)" title="More Options">
-                        <svg class="icon-svg" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                    </button>
-                    <div class="dropdown-menu" id="headerDropdown">
-                        <div class="menu-item" onclick="handleMenuAction('Recommend me a good car')">✨ Recommend a Car</div>
-                        <div class="menu-item" onclick="handleMenuAction('Check Order Status')">📦 Check Order Status</div>
-                        <div class="menu-item" onclick="handleMenuAction('Request Test Drive')">🚗 Request Test Drive</div>
-                        <div class="menu-item" onclick="handleMenuAction('Speak to Human')">🎧 Speak to Human</div>
-                    </div>
-                </div>
-
                 <button class="icon-btn" onclick="handleChatClose()" title="End Conversation">
                     <svg class="icon-svg" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                 </button>
@@ -493,45 +518,51 @@
         <div id="salesforce-chat-target"></div>
 
         <div class="chat-footer">
+            
+            <div class="menu-container" id="menuContainer">
+                <button class="icon-btn" id="menuBtn" onclick="toggleMenu(event)" title="Options">
+                    <svg class="icon-svg" viewBox="0 0 24 24" style="color: #64748b"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+                </button>
+                <div class="dropdown-menu" id="headerDropdown">
+                    <div class="menu-item" onclick="handleMenuAction('Recommend me a good car')">✨ Recommend a Car</div>
+                    <div class="menu-item" onclick="handleMenuAction('Check Order Status')">📦 Check Order Status</div>
+                    <div class="menu-item" onclick="handleMenuAction('Request Test Drive')">🚗 Request Test Drive</div>
+                    <div class="menu-item" onclick="handleMenuAction('Speak to Human')">🎧 Speak to Human</div>
+                    
+                    <div class="menu-toggle-item" onclick="toggleEnterSend(event)">
+                        <span>Press Enter to Send</span>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="enterToSendCheck" checked>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
             <div class="editor-container">
                 <div class="toolbar">
-                    <button class="tool-btn" onmousedown="formatDoc('bold')" title="Bold"><svg viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('italic')" title="Italic"><svg viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('underline')" title="Underline"><svg viewBox="0 0 24 24"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('strikeThrough')" title="Strikethrough"><svg viewBox="0 0 24 24"><path d="M10 19h4v-3h-4v3zM5 4v3h5v3h4V7h5V4H5zM3 14h18v-2H3v2z"/></svg></button>
+                    <button class="tool-btn" data-cmd="bold" onmousedown="formatDoc('bold')" title="Bold"><svg viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg></button>
+                    <button class="tool-btn" data-cmd="italic" onmousedown="formatDoc('italic')" title="Italic"><svg viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg></button>
+                    <button class="tool-btn" data-cmd="underline" onmousedown="formatDoc('underline')" title="Underline"><svg viewBox="0 0 24 24"><path d="M12 17c3.31 0 6-2.69 6-6V3h-2.5v8c0 1.93-1.57 3.5-3.5 3.5S8.5 12.93 8.5 11V3H6v8c0 3.31 2.69 6 6 6zm-7 2v2h14v-2H5z"/></svg></button>
+                    <button class="tool-btn" data-cmd="strikeThrough" onmousedown="formatDoc('strikeThrough')" title="Strikethrough"><svg viewBox="0 0 24 24"><path d="M10 19h4v-3h-4v3zM5 4v3h5v3h4V7h5V4H5zM3 14h18v-2H3v2z"/></svg></button>
                     
                     <div class="separator"></div>
 
-                    <button class="tool-btn" onmousedown="formatDoc('formatBlock', 'H3')" title="Header"><svg viewBox="0 0 24 24"><path d="M5 4v3h5v12h3V7h5V4H5z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('formatBlock', 'pre')" title="Code Block"><svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('formatBlock', 'blockquote')" title="Quote"><svg viewBox="0 0 24 24"><path d="M6 17h3l2-4V7H5v6h3zm8 0h3l2-4V7h-6v6h3z"/></svg></button>
+                    <button class="tool-btn" data-cmd="insertUnorderedList" onmousedown="formatDoc('insertUnorderedList')" title="Bullet List"><svg viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg></button>
+                    <button class="tool-btn" data-cmd="insertOrderedList" onmousedown="formatDoc('insertOrderedList')" title="Numbered List"><svg viewBox="0 0 24 24"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/></svg></button>
 
                     <div class="separator"></div>
-
-                    <button class="tool-btn" onmousedown="formatDoc('insertUnorderedList')" title="Bullet List"><svg viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('insertOrderedList')" title="Numbered List"><svg viewBox="0 0 24 24"><path d="M2 17h2v.5H3v1h1v.5H2v1h3v-4H2v1zm1-9h1V4H2v1h1v3zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2v1zm5-6v2h14V5H7zm0 14h14v-2H7v2zm0-6h14v-2H7v2z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('outdent')" title="Outdent"><svg viewBox="0 0 24 24"><path d="M11 17h10v-2H11v2zm-8-5l4 4V8l-4 4zm0 9h18v-2H3v2zM3 3v2h18V3H3zm8 6h10V7H11v2zm0 4h10v-2H11v2z"/></svg></button>
-                    <button class="tool-btn" onmousedown="formatDoc('indent')" title="Indent"><svg viewBox="0 0 24 24"><path d="M3 21h18v-2H3v2zM3 8v8l4-4-4-4zm8 9h10v-2H11v2zM3 3v2h18V3H3zm8 6h10V7H11v2zm0 4h10v-2H11v2z"/></svg></button>
-
-                    <div class="separator"></div>
-
-                    <button class="tool-btn" onmousedown="handleLinkBtn()" title="Link"><svg viewBox="0 0 24 24"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg></button>
-                    
-                    <button class="tool-btn" onmousedown="triggerImageUpload()" title="Insert Image"><svg viewBox="0 0 24 24"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg></button>
-                    <input type="file" id="imgUpload" accept="image/*" style="display: none;" onchange="handleImageFile(this)">
 
                     <button class="tool-btn" onmousedown="formatDoc('removeFormat')" title="Remove Formatting"><svg viewBox="0 0 24 24"><path d="M19.8 8c1.1 0 2.2-.9 2.2-2s-.9-2.2-2.2-2.2-2.2.9-2.2 2 .9 2.2 2.2 2.2zm-2.5 5.5l.5.5H5.7l.5-.5 3.2-3.1c.3-.3.3-.8 0-1.1L8.5 8.4l-.5-.5H18l-.5.5-3.2 3.1c-.3.3-.3.8 0 1.1l.9.9z"/></svg></button>
                 </div>
                 
-                <div id="richTextEditor" class="rich-input" contenteditable="true" placeholder="Type your message..."></div>
+                <div id="richTextEditor" class="rich-input" contenteditable="true" placeholder="Type your message..." 
+                     onmouseup="detectState()" onkeyup="detectState()" onclick="detectState()"></div>
             </div>
 
-            <div class="footer-actions">
-                <button class="send-btn" onclick="handleCustomSend()">
-                    <span>Send Message</span>
-                    <svg class="icon-svg" style="width:16px;height:16px;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                </button>
-            </div>
+            <button class="send-btn" onclick="handleCustomSend()" title="Send">
+                <svg class="icon-svg" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
         </div>
     </div>
 
@@ -540,11 +571,11 @@
         let isExpanded = false;
         let isInitialized = false;
         let hasSentConversationContext = false;
+        let sendOnEnter = true; // Default
 
         // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received the onEmbeddedMessageSent event…");
-            
             if (!hasSentConversationContext) {
                 let cwcIframe = document.getElementById('embeddedMessagingFrame');
                 if (cwcIframe) {
@@ -559,7 +590,6 @@
             }
         });
 
-
         // --- DYNAMIC SCRIPT INJECTION HELPER ---
         function loadSalesforceScript() {
             const script = document.createElement('script');
@@ -573,13 +603,10 @@
         function updateSidebarState(isVisible) {
             const wrapper = document.getElementById('chatWrapper');
             const toggle = document.getElementById('sidebarToggle');
-            
             if (isVisible) {
                 wrapper.classList.add('visible');
                 toggle.classList.add('chat-open'); 
-                if(wrapper.classList.contains('expanded')) {
-                    toggle.classList.add('expanded');
-                }
+                if(wrapper.classList.contains('expanded')) toggle.classList.add('expanded');
             } else {
                 wrapper.classList.remove('visible');
                 toggle.classList.remove('chat-open');
@@ -587,7 +614,6 @@
             }
         }
         
-        // --- MAIN TOGGLE FUNCTION ---
         function toggleSidebarState() {
             const wrapper = document.getElementById('chatWrapper');
             const toggleText = document.getElementById('toggleTextLabel');
@@ -599,11 +625,8 @@
                 toggleText.innerText = "Continue Chatting";
                 updateSidebarState(true);
             } else {
-                if (isVisible) {
-                    updateSidebarState(false);
-                } else {
-                    updateSidebarState(true);
-                }
+                if (isVisible) updateSidebarState(false);
+                else updateSidebarState(true);
             }
         }
 
@@ -633,23 +656,17 @@
         window.initEmbeddedMessaging = function() {
             try {
                 if (!window.embeddedservice_bootstrap) { return; }
-
                 embeddedservice_bootstrap.settings.language = 'en_US'; 
                 embeddedservice_bootstrap.settings.headerEnabled = false; 
                 embeddedservice_bootstrap.settings.displayMode = 'inline';
                 embeddedservice_bootstrap.settings.targetElement = document.getElementById("salesforce-chat-target");
-
                 embeddedservice_bootstrap.init(
                     '00DIc000000HJCl',
                     'MRI_Sales_Chat_V2',
                     'https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878',
-                    {
-                        scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com'
-                    }
+                    { scrt2URL: 'https://storm-555fc987410410.my.salesforce-scrt.com' }
                 );
-            } catch (err) {
-                console.error('[DEBUG] Init failed:', err);
-            }
+            } catch (err) { console.error('[DEBUG] Init failed:', err); }
         };
 
         // --- MENU LOGIC ---
@@ -674,70 +691,69 @@
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance);
             }
         }
-
-        // --- CUSTOM EDITOR LOGIC (Native execCommand) ---
         
-        // 1. Core Format Function
+        // --- ENTER TO SEND TOGGLE ---
+        function toggleEnterSend(e) {
+            e.stopPropagation(); // Don't close menu when clicking toggle
+            const checkbox = document.getElementById('enterToSendCheck');
+            // Toggle value is handled by checkbox default behavior, we just read it
+            setTimeout(() => {
+                sendOnEnter = checkbox.checked;
+                console.log("Send on Enter is now:", sendOnEnter);
+            }, 50);
+        }
+
+        // --- CUSTOM EDITOR LOGIC ---
+        
+        // 1. Format Doc
         function formatDoc(cmd, value = null) {
-            event.preventDefault(); // Stop button from stealing focus
+            event.preventDefault(); 
             document.execCommand(cmd, false, value);
-            document.getElementById('richTextEditor').focus(); // Ensure focus stays on editor
+            document.getElementById('richTextEditor').focus();
+            detectState(); // Check state immediately after applying
         }
 
-        // 2. Link Handler
-        function handleLinkBtn() {
-            event.preventDefault();
-            const url = prompt("Enter the URL:");
-            if (url) {
-                document.execCommand('createLink', false, url);
-            }
+        // 2. STATE DETECTION (Focus Buttons)
+        function detectState() {
+            const buttons = document.querySelectorAll('.tool-btn[data-cmd]');
+            buttons.forEach(btn => {
+                const cmd = btn.getAttribute('data-cmd');
+                // Check if the current selection has this formatting applied
+                const isActive = document.queryCommandState(cmd);
+                
+                if (isActive) {
+                    btn.classList.add('active-state');
+                } else {
+                    btn.classList.remove('active-state');
+                }
+            });
         }
 
-        // 3. Image Upload Trigger
-        function triggerImageUpload() {
-            event.preventDefault();
-            document.getElementById('imgUpload').click();
-        }
-
-        // 4. Image Processor (File -> Base64 -> Insert)
-        function handleImageFile(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    // Focus editor before inserting
-                    document.getElementById('richTextEditor').focus();
-                    document.execCommand('insertImage', false, e.target.result);
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-            // Reset input so same file can be selected again
-            input.value = '';
-        }
-
-        // 5. Send Logic
+        // 3. Send Logic
         function handleCustomSend() {
             const editor = document.getElementById('richTextEditor');
             const htmlContent = editor.innerHTML;
             const textContent = editor.innerText.trim();
-            const hasImage = htmlContent.includes('<img');
-
-            if (!textContent && !hasImage) return;
+            // Basic check to see if it's empty
+            if (!textContent && !htmlContent.includes('<')) return;
 
             if (typeof embeddedservice_bootstrap !== 'undefined' && embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
-                // Send HTML content
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(htmlContent);
-                // Clear Editor
-                editor.innerHTML = '';
+                editor.innerHTML = ''; // Clear
+                detectState(); // Reset buttons
             } else {
                 console.warn("Salesforce Chat API is not ready.");
             }
         }
 
-        // Handle Enter key to send
+        // 4. Handle Enter Key
         document.getElementById('richTextEditor').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleCustomSend();
+            if (e.key === 'Enter') {
+                if (sendOnEnter && !e.shiftKey) {
+                    e.preventDefault();
+                    handleCustomSend();
+                }
+                // If sendOnEnter is false, or Shift is held, let default happen (new line)
             }
         });
 
@@ -745,13 +761,15 @@
             document.getElementById('privacyBanner').style.display = 'none';
         }
 
+        // Close menu on outside click
         document.addEventListener('click', function(event) {
             const menuContainer = document.getElementById('menuContainer');
             if (menuContainer && !menuContainer.contains(event.target)) {
                 closeMenu();
             }
         });
-
+        
+        // iframe blur handling
         window.addEventListener('blur', function() {
             setTimeout(closeMenu, 100); 
         });
