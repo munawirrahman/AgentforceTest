@@ -126,7 +126,7 @@
             opacity: 0;
             border-left: 0; 
             height: 100vh; 
-            display: flex;        
+            display: flex;       
             flex-direction: column; 
             position: relative;
             z-index: 50;
@@ -778,9 +778,11 @@
             }
         });
 
-        // --- AUTO LIST LISTENER (1. and - ) ---
+        // --- AUTO LIST LISTENER (Robust Version) ---
+        // Handles "1. " and "- " trigger even if browser adds non-breaking spaces
         document.getElementById('richTextEditor').addEventListener('keyup', (e) => {
-            if (e.key === ' ') {
+            // Check for Space (standard or non-breaking)
+            if (e.key === ' ' || e.code === 'Space' || e.keyCode === 32) {
                 const sel = window.getSelection();
                 if(!sel.rangeCount) return;
 
@@ -791,21 +793,35 @@
                 if (textNode.nodeType === 3) { 
                     const text = textNode.textContent;
                     const offset = range.startOffset;
+                    
                     // Get text up to the cursor
                     const textBefore = text.slice(0, offset);
 
-                    // BULLET: Check if typed "- " or "* "
-                    if (textBefore === '- ' || textBefore === '* ') {
+                    // REGEX PATTERNS:
+                    // 1. Matches "- " or "* " (allowing for Non-Breaking Space \u00A0)
+                    const unorderedPattern = /^[\-\*][ \u00A0]$/;
+                    
+                    // 2. Matches "1. " (allowing for Non-Breaking Space \u00A0)
+                    const orderedPattern = /^1\.[ \u00A0]$/;
+
+                    // BULLET LIST DETECTION
+                    if (unorderedPattern.test(textBefore)) {
+                        e.preventDefault();
+                        // 1. Remove the "- " triggers
                         range.setStart(textNode, 0);
                         range.setEnd(textNode, offset);
                         range.deleteContents();
+                        // 2. Convert to List
                         document.execCommand('insertUnorderedList');
-                    }
-                    // NUMBER: Check if typed "1. "
-                    else if (textBefore === '1. ') {
+                    } 
+                    // NUMBERED LIST DETECTION
+                    else if (orderedPattern.test(textBefore)) {
+                        e.preventDefault();
+                        // 1. Remove the "1. " triggers
                         range.setStart(textNode, 0);
                         range.setEnd(textNode, offset);
                         range.deleteContents();
+                        // 2. Convert to List
                         document.execCommand('insertOrderedList');
                     }
                 }
