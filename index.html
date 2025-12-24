@@ -16,7 +16,7 @@
             --text-light: #f8fafc;
             --text-muted: #94a3b8;
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-            --chat-width-normal: 400px; /* Slightly wider for the toolbar */
+            --chat-width-normal: 400px;
             --chat-width-expanded: 50vw; 
         }
 
@@ -340,20 +340,40 @@
         .editor-wrapper {
             display: flex;
             flex-direction: column;
-            border: 1px solid #ccc;
+            /* Update 1: Main Border Color */
+            border: 1px solid var(--brand-primary);
             border-radius: 8px;
             background: #fff;
             overflow: hidden;
             flex: 1;
         }
 
-        /* Customizing Quill Toolbar to fit nicely */
+        /* Customizing Quill Toolbar */
         .ql-toolbar.ql-snow {
             border: none !important;
-            border-bottom: 1px solid #eee !important;
+            /* Update 2: Toolbar Separator Color */
+            border-bottom: 1px solid var(--brand-primary) !important;
             background: #f8fafc;
         }
         
+        /* Update 3: Change all Quill Icons to Brand Color */
+        .ql-snow .ql-stroke {
+            stroke: var(--brand-primary) !important;
+        }
+        .ql-snow .ql-fill {
+            fill: var(--brand-primary) !important;
+        }
+        .ql-snow .ql-picker {
+            color: var(--brand-primary) !important;
+        }
+        .ql-snow .ql-picker-label::before {
+            color: var(--brand-primary) !important;
+        }
+        /* Fix for svg paths that use fill instead of stroke */
+        .ql-snow .ql-picker-options .ql-picker-item {
+            color: var(--brand-primary) !important;
+        }
+
         .ql-container.ql-snow {
             border: none !important;
             font-family: 'Segoe UI', sans-serif !important;
@@ -362,8 +382,14 @@
 
         .ql-editor {
             min-height: 60px;
-            max-height: 200px; /* Allow it to grow but not take over screen */
+            max-height: 200px;
             overflow-y: auto;
+            color: #334155; /* Keep typing text dark grey for readability */
+        }
+        
+        /* Ensure cursor color matches brand if supported */
+        .ql-editor {
+            caret-color: var(--brand-primary);
         }
 
         .footer-actions {
@@ -643,7 +669,7 @@
                         [{ 'direction': 'rtl' }, { 'align': [] }],
 
                         // Media & Links
-                        ['link', 'image'], // 'table' requires separate module usually, but pasting works
+                        ['link', 'image'], 
                         
                         // Clean
                         ['clean']
@@ -651,32 +677,24 @@
                 }
             });
 
-            // Optional: Handle 'Enter' key to send (Shift+Enter for newline)
+            // Handle 'Enter' key to send (Shift+Enter for newline)
             quill.keyboard.addBinding({ key: 13, shiftKey: false }, function(range, context) {
                 handleCustomSend();
-                return false; // prevent default behavior
+                return false; 
             });
         }
 
-        // --- SEND LOGIC (Updated for Quill) ---
+        // --- SEND LOGIC ---
         function handleCustomSend() {
             if (!quill) return;
 
-            // Get HTML content because we are sending Rich Text
             const htmlContent = quill.root.innerHTML;
-            
-            // Get text only to check if empty
             const textContent = quill.getText().trim();
 
-            if (!textContent && !htmlContent.includes('<img')) return; // Don't send empty
+            if (!textContent && !htmlContent.includes('<img')) return;
 
             if (typeof embeddedservice_bootstrap !== 'undefined' && embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
-                
-                // NOTE: Sending HTML string. The receiving bot must be able to handle/render HTML tags.
-                // If the bot only accepts plain text, use quill.getText() instead.
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(htmlContent);
-                
-                // Clear editor
                 quill.setContents([]);
             } else {
                 console.warn("Salesforce Chat API is not ready.");
@@ -687,7 +705,6 @@
             document.getElementById('privacyBanner').style.display = 'none';
         }
 
-        // Click outside logic
         document.addEventListener('click', function(event) {
             const menuContainer = document.getElementById('menuContainer');
             if (menuContainer && !menuContainer.contains(event.target)) {
