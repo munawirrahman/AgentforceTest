@@ -317,7 +317,58 @@
             flex: 1; 
             width: 100%;
             background-color: #f3f4f6;
+            /* Ensure the target area scrolls if necessary, though iframe usually handles this */
+            overflow: hidden; 
         }
+
+        /* --- NEW: CHAT FOOTER (Rich Text Area) --- */
+        .chat-footer {
+            background: #fff;
+            padding: 1rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 45;
+        }
+
+        .custom-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 0.95rem;
+            resize: none;
+            height: 50px;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .custom-input:focus {
+            border-color: var(--brand-primary);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(0, 71, 171, 0.1);
+        }
+
+        .send-btn {
+            background: var(--brand-primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .send-btn:hover { background: var(--brand-accent); }
 
     </style>
 </head>
@@ -377,6 +428,13 @@
         </div>
 
         <div id="salesforce-chat-target"></div>
+
+        <div class="chat-footer">
+            <textarea id="customMsgInput" class="custom-input" placeholder="Type a message..."></textarea>
+            <button class="send-btn" onclick="handleCustomSend()" title="Send Message">
+                <svg class="icon-svg" style="width:20px;height:20px;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            </button>
+        </div>
     </div>
 
     <script type='text/javascript'>
@@ -550,6 +608,32 @@
                 embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance);
             }
         }
+
+        // --- NEW: HANDLE CUSTOM SEND LOGIC ---
+        function handleCustomSend() {
+            const input = document.getElementById('customMsgInput');
+            const text = input.value.trim();
+
+            if (!text) return; // Don't send empty messages
+
+            if (typeof embeddedservice_bootstrap !== 'undefined' && embeddedservice_bootstrap.utilAPI && embeddedservice_bootstrap.utilAPI.sendTextMessage) {
+                // Trigger the API
+                embeddedservice_bootstrap.utilAPI.sendTextMessage(text);
+                
+                // Clear the input
+                input.value = '';
+            } else {
+                console.warn("Salesforce Chat API is not ready or initialized.");
+            }
+        }
+
+        // Add Enter key support for the custom textarea
+        document.getElementById('customMsgInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleCustomSend();
+            }
+        });
 
         function closePrivacyBanner() {
             const banner = document.getElementById('privacyBanner');
