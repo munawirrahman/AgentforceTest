@@ -597,66 +597,40 @@
         let hasSentConversationContext = false;
         let sendOnEnter = true; 
 
-        // --- HELPER TO MANAGE EDITOR STATE ---
-        function setChatState(isEnabled, placeholderText) {
-            const editorDiv = document.getElementById('richTextEditor');
-            const editorContainer = document.getElementById('editorContainer');
-            const sendButton = document.getElementById('sendBtn');
+        // --- SECURITY & LISTENER ---
+        window.addEventListener('message', function (event) {
+            // 1. DEFINE ALLOWED ORIGINS (Security)
+            const allowedOrigins = [
+                "https://storm-555fc987410410.my.site.com", // Your Salesforce Domain
+                "https://trusted-origin.com"                 // Add other trusted origins here
+            ];
 
-            // Set Placeholder
-            if(placeholderText) {
-                editorDiv.setAttribute('placeholder', placeholderText);
+            // 2. FILTER ORIGIN
+            if (!allowedOrigins.includes(event.origin)) {
+                return; // Ignore invalid origins silently
             }
 
-            if (isEnabled) {
-                // ENABLE
-                editorDiv.contentEditable = "true";
-                editorContainer.classList.remove('disabled');
-                sendButton.disabled = false;
-            } else {
-                // DISABLE
-                editorDiv.contentEditable = "false";
-                editorContainer.classList.add('disabled');
-                sendButton.disabled = true;
-            }
-        }
+            // 3. CHECK EVENT DATA
+            if (event.data && event.data.eventName === "DISABLE_TEXT_INPUT") {
+                console.log("Received DISABLE_TEXT_INPUT signal", event.data);
 
-        // --- RAW IFRAME MESSAGE LISTENER ---
-        // Listens to ALL postMessages from Salesforce Iframe to detect Start/End
-        window.addEventListener("message", (event) => {
-            if (!event.data) return;
-
-            // Debug: Uncomment this to see raw messages in console if needed
-            // console.log("Raw Iframe Message:", event.data);
-
-            // CASE 1: Check if data is an Object with eventName (Standard MIAW format)
-            if (typeof event.data === 'object' && event.data.eventName) {
-                const name = event.data.eventName;
+                const editor = document.getElementById('richTextEditor');
+                const container = document.getElementById('editorContainer');
+                const btn = document.getElementById('sendBtn');
                 
-                if (name === 'onEmbeddedMessagingConversationStarted') {
-                    console.log("Custom Detection: Chat Started");
-                    setChatState(true, "Type your message...");
+                // 4. PERFORM ACTION: Disable Input
+                editor.contentEditable = "false";
+                container.classList.add('disabled');
+                btn.disabled = true;
+
+                // 5. UPDATE PLACEHOLDER (from detail)
+                if (event.data.detail && event.data.detail.placeholderText) {
+                    editor.setAttribute('placeholder', event.data.detail.placeholderText);
                 }
-                
-                if (name === 'onEmbeddedMessagingConversationClosed') {
-                    console.log("Custom Detection: Chat Closed");
-                    setChatState(false, "Conversation has ended.");
-                }
-            }
-            
-            // CASE 2: Legacy/Alternative Check (String matching)
-            // Sometimes the event comes as a raw string or nested in payload
-            const rawString = JSON.stringify(event.data);
-            if (rawString.includes("onEmbeddedMessagingConversationStarted")) {
-                 setChatState(true, "Type your message...");
-            }
-            if (rawString.includes("onEmbeddedMessagingConversationClosed") || rawString.includes("sessionEnded")) {
-                 setChatState(false, "Conversation has ended.");
             }
         });
 
-        // --- LISTENER FOR EmbeddedMessageSent (Turn Taking) ---
-        // This is a browser CustomEvent, distinct from iframe postMessages
+        // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received the onEmbeddedMessageSent event…");
 
@@ -718,8 +692,8 @@
                 isInitialized = true;
                 toggleText.innerText = "Continue Chatting";
                 
-                // Initially disable until connection is detected via postMessage
-                setChatState(false, "Connecting...");
+                // Initially enable standard text
+                document.getElementById('richTextEditor').setAttribute('placeholder', 'Type your message...');
                 updateSidebarState(true);
             } else {
                 if (isVisible) updateSidebarState(false);
