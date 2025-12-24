@@ -336,11 +336,9 @@
             z-index: 45;
         }
 
-        /* The container for Quill */
         .editor-wrapper {
             display: flex;
             flex-direction: column;
-            /* Update 1: Main Border Color */
             border: 1px solid var(--brand-primary);
             border-radius: 8px;
             background: #fff;
@@ -351,28 +349,16 @@
         /* Customizing Quill Toolbar */
         .ql-toolbar.ql-snow {
             border: none !important;
-            /* Update 2: Toolbar Separator Color */
             border-bottom: 1px solid var(--brand-primary) !important;
             background: #f8fafc;
         }
         
-        /* Update 3: Change all Quill Icons to Brand Color */
-        .ql-snow .ql-stroke {
-            stroke: var(--brand-primary) !important;
-        }
-        .ql-snow .ql-fill {
-            fill: var(--brand-primary) !important;
-        }
-        .ql-snow .ql-picker {
-            color: var(--brand-primary) !important;
-        }
-        .ql-snow .ql-picker-label::before {
-            color: var(--brand-primary) !important;
-        }
-        /* Fix for svg paths that use fill instead of stroke */
-        .ql-snow .ql-picker-options .ql-picker-item {
-            color: var(--brand-primary) !important;
-        }
+        /* Quill Icons Brand Color */
+        .ql-snow .ql-stroke { stroke: var(--brand-primary) !important; }
+        .ql-snow .ql-fill { fill: var(--brand-primary) !important; }
+        .ql-snow .ql-picker { color: var(--brand-primary) !important; }
+        .ql-snow .ql-picker-label::before { color: var(--brand-primary) !important; }
+        .ql-snow .ql-picker-options .ql-picker-item { color: var(--brand-primary) !important; }
 
         .ql-container.ql-snow {
             border: none !important;
@@ -384,11 +370,7 @@
             min-height: 60px;
             max-height: 200px;
             overflow-y: auto;
-            color: #334155; /* Keep typing text dark grey for readability */
-        }
-        
-        /* Ensure cursor color matches brand if supported */
-        .ql-editor {
+            color: #334155; 
             caret-color: var(--brand-primary);
         }
 
@@ -633,7 +615,7 @@
             }
         }
 
-        // --- QUILL INITIALIZATION ---
+        // --- QUILL INITIALIZATION (SIMPLIFIED TOOLBAR) ---
         function initQuillEditor() {
             if(typeof Quill === 'undefined') {
                 console.error("Quill JS library not loaded.");
@@ -645,17 +627,10 @@
                 placeholder: 'Type your message...',
                 modules: {
                     toolbar: [
-                        // Font & Size
-                        [{ 'font': [] }, { 'size': [] }],
+                        // REMOVED: Font, Size, Color, Background, Script
                         
                         // Formatting
                         ['bold', 'italic', 'underline', 'strike'], 
-                        
-                        // Color & Background
-                        [{ 'color': [] }, { 'background': [] }],
-                        
-                        // Script (Sub/Super)
-                        [{ 'script': 'sub'}, { 'script': 'super' }],
                         
                         // Headers & Blocks
                         [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -665,11 +640,10 @@
                         [{ 'list': 'ordered'}, { 'list': 'bullet' }],
                         [{ 'indent': '-1'}, { 'indent': '+1' }], 
                         
-                        // Direction & Align
-                        [{ 'direction': 'rtl' }, { 'align': [] }],
+                        // REMOVED: Direction, Align
 
-                        // Media & Links
-                        ['link', 'image'], 
+                        // Media (Link only, Removed Image)
+                        ['link'], 
                         
                         // Clean
                         ['clean']
