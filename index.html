@@ -7,7 +7,7 @@
     <style>
         /* --- BRANDING & RESET --- */
         :root {
-            /* WCAG AA Compliant Blue */
+            /* WCAG AA Compliant Colors */
             --brand-primary: #1d4ed8;       /* Blue 700 */
             --brand-hover: #1e40af;         /* Blue 800 */
             --brand-gradient: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
@@ -16,8 +16,8 @@
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             
             --text-on-dark: #f8fafc;        /* Slate 50 */
-            --text-main: #1e293b;           /* Slate 800 (High Contrast) */
-            --text-secondary: #475569;      /* Slate 600 (Accessible Gray) */
+            --text-main: #1e293b;           /* Slate 800 */
+            --text-secondary: #475569;      /* Slate 600 */
             --border-color: #cbd5e1;        /* Slate 300 */
             
             --chat-width-normal: 420px;
@@ -27,7 +27,6 @@
             --radius-md: 12px;
             --radius-sm: 8px;
             
-            /* Focus Ring for Accessibility */
             --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.4);
         }
 
@@ -60,7 +59,7 @@
         }
 
         .logo { font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; gap: 10px; letter-spacing: -0.5px; }
-        .logo span { color: #3b82f6; /* Lighter blue okay for large logo text on dark bg */ }
+        .logo span { color: #3b82f6; }
 
         .content-panel {
             padding: 4rem;
@@ -81,7 +80,7 @@
             width: 52px; 
             min-height: 70px;
             padding: 10px 0;
-            background: #1e293b; /* Solid dark background for contrast */
+            background: #1e293b; 
             color: white;
             border: 1px solid #334155;
             border-right: none;
@@ -123,8 +122,8 @@
         
         .sidebar-toggle.chat-open.expanded { right: var(--chat-width-expanded); }
         .sidebar-toggle.chat-open .toggle-text { display: none; }
-        .sidebar-toggle .icon-maximize { display: block; }
-        .sidebar-toggle .icon-minimize { display: none; }
+        .sidebar-toggle.chat-open .icon-maximize { display: block; }
+        .sidebar-toggle.chat-open .icon-minimize { display: none; }
         .sidebar-toggle.chat-open .icon-maximize { display: none; }
         .sidebar-toggle.chat-open .icon-minimize { display: block; }
 
@@ -158,8 +157,8 @@
 
         /* --- CHAT HEADER --- */
         .chat-header {
-            background: white; 
-            color: var(--text-main);
+            background: var(--bg-dark); 
+            color: white;               
             min-height: 72px; 
             padding: 0 1.5rem; 
             display: flex;
@@ -168,7 +167,7 @@
             font-weight: 700;
             font-size: 16px; 
             flex-shrink: 0; 
-            border-bottom: 1px solid #e2e8f0; 
+            border-bottom: 1px solid #1e293b; 
             width: 100%;
             position: relative;
             z-index: 55;
@@ -185,11 +184,11 @@
         .header-logo-img { height: 36px; width: auto; object-fit: contain; }
         .header-actions { display: flex; align-items: center; gap: 8px; }
 
-        /* --- BUTTONS --- */
-        .icon-btn {
+        /* HEADER BUTTONS */
+        .chat-header .icon-btn {
             background: transparent; 
-            border: 1px solid transparent; /* Placeholder for high contrast border */
-            color: var(--text-secondary); 
+            border: 1px solid transparent; 
+            color: #94a3b8; 
             width: 40px;
             height: 40px;
             border-radius: 50%; 
@@ -200,15 +199,16 @@
             transition: all 0.2s ease;
         }
         
-        .icon-btn:hover { 
-            background: #f1f5f9; 
-            color: var(--brand-primary);
-            border-color: #e2e8f0;
+        .chat-header .icon-btn:hover { 
+            background: rgba(255,255,255,0.1); 
+            color: white;
+            border-color: transparent;
         }
 
-        .icon-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); border-color: var(--brand-primary); }
+        .chat-header .icon-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px white; }
         
         .icon-svg { width: 22px; height: 22px; fill: currentColor; }
+
 
         /* --- DROPDOWN MENU --- */
         .menu-container { position: relative; }
@@ -224,7 +224,7 @@
             padding: 8px;
             display: none; 
             z-index: 1000;
-            border: 1px solid #cbd5e1; /* Clear border */
+            border: 1px solid #cbd5e1; 
             transform-origin: bottom left;
             animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
@@ -235,7 +235,7 @@
             padding: 12px;
             border-radius: var(--radius-sm);
             color: var(--text-main);
-            font-size: 0.95rem; /* Larger text */
+            font-size: 0.95rem; 
             font-weight: 500;
             cursor: pointer;
             transition: background 0.1s;
@@ -248,7 +248,14 @@
         .menu-item:hover { background: #f0f9ff; color: var(--brand-primary); border-color: #bae6fd; }
         .menu-item:focus-visible { outline: none; background: #f0f9ff; box-shadow: 0 0 0 2px var(--brand-primary) inset; }
         
-        /* Toggle Switch */
+        /* Disabled Menu Item Style */
+        .menu-item.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: #f1f5f9;
+        }
+
         .menu-toggle-item {
             padding: 12px;
             margin-top: 4px;
@@ -279,22 +286,49 @@
 
         /* --- DISCLAIMER BANNER --- */
         .privacy-banner {
-            background-color: #f1f5f9; 
-            color: var(--text-secondary); 
-            padding: 0.75rem 1rem; 
+            background-color: var(--brand-primary); 
+            color: white;                           
+            padding: 0.8rem 1rem; 
+            padding-right: 40px; 
             font-size: 0.8rem;
-            font-weight: 600;
-            text-align: center;
+            font-weight: 500;
             position: relative;
             flex-shrink: 0;
             z-index: 40;
-            border-bottom: 1px solid #cbd5e1;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            
+            display: flex;
+            align-items: center; 
+            text-align: left;    
+            line-height: 1.4;
         }
+
+        .privacy-banner span {
+            flex: 1;            
+            min-width: 0;       
+            white-space: normal; 
+            word-wrap: break-word; 
+        }
+
         .banner-close-btn {
-            background: transparent; border: none; color: var(--text-secondary); font-size: 1.5rem; cursor: pointer; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 4px;
+            background: transparent; 
+            border: none; 
+            color: rgba(255,255,255,0.8); 
+            font-size: 1.5rem; 
+            cursor: pointer; 
+            position: absolute; 
+            right: 10px; 
+            top: 50%; 
+            transform: translateY(-50%); 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            width: 30px; 
+            height: 30px; 
+            border-radius: 50%;
         }
-        .banner-close-btn:hover { color: #dc2626; background: #fee2e2; }
-        .banner-close-btn:focus-visible { outline: none; box-shadow: var(--focus-ring); }
+        .banner-close-btn:hover { color: white; background: rgba(255,255,255,0.2); }
+        .banner-close-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px white; }
 
         /* --- TARGET AREA --- */
         #salesforce-chat-target {
@@ -320,7 +354,6 @@
             border-top: 1px solid #f1f5f9;
         }
 
-        /* Status Message */
         .status-message {
             display: none; 
             width: 100%;
@@ -334,9 +367,8 @@
             border: 1px dashed #cbd5e1;
         }
 
-        /* The Input Container (Bubble look) */
         .editor-container {
-            border: 1px solid var(--border-color); /* Visible border for accessibility */
+            border: 1px solid var(--border-color);
             border-radius: 18px; 
             background: #fff;
             display: flex;
@@ -351,10 +383,9 @@
             box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
-        /* Disabled State */
         .editor-container.disabled {
             background-color: #f1f5f9;
-            opacity: 0.8; /* Higher opacity for readability */
+            opacity: 0.8; 
             pointer-events: none;
             border-style: dashed;
         }
@@ -368,17 +399,32 @@
             border-bottom: 1px solid #e2e8f0;
         }
 
+        .chat-footer .icon-btn {
+            background: transparent; 
+            border: 1px solid transparent; 
+            color: var(--text-secondary); 
+            width: 40px;
+            height: 40px;
+            border-radius: 50%; 
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            transition: all 0.2s ease;
+        }
+        .chat-footer .icon-btn:hover { background: #f1f5f9; color: var(--brand-primary); border-color: #e2e8f0; }
+
         .tool-btn {
             background: transparent;
             border: 1px solid transparent;
             border-radius: 6px;
             cursor: pointer;
-            width: 32px; /* Larger touch target */
+            width: 32px; 
             height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text-secondary); /* Darker gray icon */
+            color: var(--text-secondary); 
             transition: all 0.1s;
         }
 
@@ -394,13 +440,12 @@
             max-height: 120px;
             overflow-y: auto;
             outline: none;
-            font-size: 1rem; /* Base 16px for readability */
+            font-size: 1rem; 
             color: var(--text-main);
             line-height: 1.5;
         }
 
         .rich-input ol, .rich-input ul { padding-inline-start: 24px; margin-block: 4px; }
-        /* Placeholder text contrast fix */
         .rich-input:empty:before { content: attr(placeholder); color: #64748b; pointer-events: none; display: block; }
 
         /* --- SEND BUTTON --- */
@@ -433,7 +478,7 @@
             color: #f1f5f9;
         }
         
-        /* Menu Button specific */
+        /* Menu Button specific override */
         #menuBtn { width: 40px; height: 40px; background: #f1f5f9; border-radius: 50%; margin-bottom: 6px; border: 1px solid #e2e8f0; }
         #menuBtn:hover { background: #e2e8f0; border-color: #cbd5e1; }
 
@@ -463,7 +508,7 @@
         <div class="chat-header">
             <div class="header-branding">
                 <img src="https://munawirrahman.github.io/AgentforceTest/logo.png" alt="Apex Logo" class="header-logo-img">
-                <span>Apex Agent</span>
+                <span>Apex Automotive Agent</span>
             </div>
             <div class="header-actions">
                 <button class="icon-btn" onclick="toggleChatExpand()" title="Toggle View" aria-label="Expand or Collapse Chat">
@@ -537,6 +582,20 @@
         let hasSentConversationContext = false;
         let sendOnEnter = true; 
 
+        // --- HELPER TO DISABLE/ENABLE MENU ---
+        function updateMenuState(shouldDisable) {
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                if (shouldDisable) {
+                    item.classList.add('disabled');
+                    item.setAttribute('tabindex', '-1'); // Remove from keyboard tab order
+                } else {
+                    item.classList.remove('disabled');
+                    item.setAttribute('tabindex', '0'); // Restore keyboard focus
+                }
+            });
+        }
+
         // --- SECURITY & LISTENER ---
         window.addEventListener('message', function (event) {
             const allowedOrigins = [
@@ -556,6 +615,9 @@
                 editor.contentEditable = "false";
                 container.classList.add('disabled');
                 btn.disabled = true;
+                
+                // Disable menu items
+                updateMenuState(true);
 
                 if (event.data.detail && event.data.detail.placeholderText) {
                     editor.setAttribute('placeholder', event.data.detail.placeholderText);
@@ -590,12 +652,14 @@
             const role = event.detail.conversationEntry.sender.role;
             if (role === 'EndUser') {
                 sendBtn.disabled = true;
+                updateMenuState(true); // Disable menu while waiting
             } else if (role === 'Chatbot' || role === 'Agent') {
                 sendBtn.disabled = false;
                 editor.contentEditable = "true";
                 editorContainer.classList.remove('disabled');
                 editor.setAttribute('placeholder', 'Type a message...');
                 editor.focus();
+                updateMenuState(false); // Enable menu when agent replies
             }
 
             // --- CONTEXT LOGIC ---
@@ -623,6 +687,9 @@
             
             const statusMsg = document.getElementById('conversationStatus');
             statusMsg.style.display = 'block';
+            
+            // Disable menu as conversation ended
+            updateMenuState(true);
         });
 
         // --- DYNAMIC SCRIPT INJECTION ---
@@ -719,6 +786,9 @@
         }
 
         function handleMenuAction(utterance) {
+            // Check if item is disabled
+            if (event.currentTarget.classList.contains('disabled')) return;
+            
             closeMenu(); 
             if(document.getElementById('sendBtn').disabled) return;
             if(embeddedservice_bootstrap.utilAPI) embeddedservice_bootstrap.utilAPI.sendTextMessage(utterance);
@@ -795,7 +865,6 @@
             if (!document.getElementById('menuContainer').contains(e.target)) closeMenu();
         });
 
-        // Keyboard navigation support for menu
         document.getElementById('headerDropdown').addEventListener('keydown', function(e) {
             if(e.key === 'Escape') closeMenu();
         });
