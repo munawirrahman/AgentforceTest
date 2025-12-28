@@ -359,19 +359,6 @@
             border-top: 1px solid #f1f5f9;
         }
 
-        .status-message {
-            display: none; 
-            width: 100%;
-            text-align: center;
-            padding: 16px;
-            background: #f8fafc;
-            border-radius: var(--radius-md);
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-            font-weight: 500;
-            border: 1px dashed #cbd5e1;
-        }
-
         .editor-container {
             border: 1px solid var(--border-color);
             border-radius: 18px; 
@@ -570,10 +557,6 @@
                      onmouseup="detectState()" onkeyup="detectState()" onclick="detectState()"></div>
             </div>
 
-            <div id="conversationStatus" class="status-message" aria-live="polite">
-                Conversation has ended.
-            </div>
-
             <button class="send-btn" id="sendBtn" onclick="handleCustomSend()" title="Send" disabled aria-label="Send Message">
                 <svg class="icon-svg" style="fill:white; width: 24px; height: 24px;" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
             </button>
@@ -636,21 +619,17 @@
 
             const footer = document.querySelector('.chat-footer');
             const editorContainer = document.getElementById('editorContainer');
-            const statusMsg = document.getElementById('conversationStatus');
+            // const statusMsg = document.getElementById('conversationStatus'); // Removed, using display:none on footer instead
             const sendBtn = document.getElementById('sendBtn');
             const editor = document.getElementById('richTextEditor');
 
-            // 1. Show Footer if hidden (First Load)
+            // 1. Show Footer if hidden (First Load or Restart)
             if (footer && window.getComputedStyle(footer).display === 'none') {
                  footer.style.display = 'flex';
-            }
-
-            // 2. Logic to Restore Input if we were in "Ended" state (New Conversation)
-            if (statusMsg.style.display === 'block') {
-                statusMsg.style.display = 'none';
-                editorContainer.style.display = 'flex';
-                sendBtn.style.display = 'flex';
-                editor.innerHTML = ''; // Clear old text
+                 // Ensure internal elements are visible/reset
+                 editorContainer.style.display = 'flex';
+                 sendBtn.style.display = 'flex';
+                 editor.innerHTML = ''; 
             }
 
             // 3. Handle Role-based Logic
@@ -690,16 +669,9 @@
         // --- LISTENER FOR ConversationClosed ---
         window.addEventListener("onEmbeddedMessagingConversationClosed", (event) => {
             console.log("Conversation Closed");
-            
-            // Toggle visibility: Hide Input, Show Status Message
-            document.getElementById('editorContainer').style.display = 'none';
-            document.getElementById('sendBtn').style.display = 'none';
-            
-            const statusMsg = document.getElementById('conversationStatus');
-            statusMsg.style.display = 'block';
-            
-            // Disable menu as conversation ended
-            updateMenuState(true);
+            // Hide the entire footer
+            const footer = document.querySelector('.chat-footer');
+            if (footer) footer.style.display = 'none';
         });
 
         // --- DYNAMIC SCRIPT INJECTION ---
