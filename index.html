@@ -126,7 +126,7 @@
             opacity: 0;
             border-left: 0; 
             height: 100vh; 
-            display: flex;       
+            display: flex;        
             flex-direction: column; 
             position: relative;
             z-index: 50;
@@ -601,7 +601,7 @@
         window.addEventListener('message', function (event) {
             const allowedOrigins = [
                 "https://storm-555fc987410410.my.site.com", 
-                "https://trusted-origin.com"                 
+                "https://trusted-origin.com"                  
             ];
 
             if (!allowedOrigins.includes(event.origin)) {
@@ -663,6 +663,21 @@
                     );
                     hasSentConversationContext = true;
                 }
+            }
+        });
+
+        // --- LISTENER FOR ConversationClosed (NEW ADDITION) ---
+        window.addEventListener("onEmbeddedMessagingConversationClosed", (event) => {
+            console.log("Conversation Closed Event Received");
+            
+            const footer = document.querySelector('.chat-footer');
+            if (footer) {
+                // Replace the input area with a simple "Ended" message
+                footer.innerHTML = `
+                    <div style="width: 100%; text-align: center; color: #64748b; font-size: 0.9rem; padding: 10px; font-style: italic;">
+                        Conversation has ended.
+                    </div>
+                `;
             }
         });
 
