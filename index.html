@@ -370,7 +370,7 @@
             background: #fff;
             padding: 0.8rem;
             border-top: 1px solid #e2e8f0;
-            display: flex;
+            display: none; /* CHANGED: Hidden by default */
             flex-direction: row; 
             gap: 10px;
             align-items: center; 
@@ -630,6 +630,12 @@
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received the onEmbeddedMessageSent event…");
 
+            // --- SHOW FOOTER LOGIC (NEW) ---
+            const footer = document.querySelector('.chat-footer');
+            if (footer && window.getComputedStyle(footer).display === 'none') {
+                 footer.style.display = 'flex';
+            }
+
             const role = event.detail.conversationEntry.sender.role;
             const btn = document.querySelector('.send-btn');
             
@@ -666,7 +672,7 @@
             }
         });
 
-        // --- LISTENER FOR ConversationClosed (NEW ADDITION) ---
+        // --- LISTENER FOR ConversationClosed ---
         window.addEventListener("onEmbeddedMessagingConversationClosed", (event) => {
             console.log("Conversation Closed Event Received");
             
