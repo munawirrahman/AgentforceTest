@@ -12,7 +12,7 @@
             --brand-hover: #1e40af;         /* Blue 800 */
             --brand-gradient: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
             
-            --brand-dark: #0f172a;          /* Slate 900 - FIXED: Added this back */
+            --brand-dark: #0f172a;          /* Slate 900 */
             --bg-dark: #0f172a;             
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             
@@ -549,7 +549,7 @@
         
         /* DARK PILL BUTTON FOR FEEDBACK SUBMIT */
         .feedback-submit-btn {
-            background: var(--brand-dark); /* Uses the fixed variable */
+            background: var(--brand-dark); 
             color: white;
             border: none;
             padding: 12px 20px; 
@@ -686,6 +686,7 @@
         let hasSentConversationContext = false;
         let sendOnEnter = true; 
         let currentRating = 0;
+        let currentConversationId = null; // Store conversation ID for Feedback
 
         // --- FEEDBACK LOGIC ---
         function setRating(val) {
@@ -702,14 +703,56 @@
 
         function submitFeedback() {
             const comment = document.getElementById('feedbackText').value;
-            console.log("Feedback Submitted:", {
-                rating: currentRating,
-                comment: comment
-            });
             
-            // Hide Form, Show Thank You
-            document.getElementById('feedbackContainer').style.display = 'none';
-            document.getElementById('feedbackThankYou').style.display = 'block';
+            if (currentRating === 0) {
+                alert("Please select a star rating.");
+                return;
+            }
+
+            if (!currentConversationId) {
+                console.error("No Conversation ID found. Cannot submit feedback.");
+                return;
+            }
+
+            const payload = {
+                rating: currentRating,
+                feedback_text: comment
+            };
+
+            const baseUrl = "https://storm-555fc987410410.my.site.com/ESWMRISalesChatV21766052582878";
+            const endpoint = `${baseUrl}/services/apexrest/api/feedback/${currentConversationId}`;
+
+            // UI Loading State
+            const submitBtn = document.querySelector('.feedback-submit-btn');
+            const originalText = submitBtn.innerText;
+            submitBtn.innerText = "Submitting...";
+            submitBtn.disabled = true;
+
+            fetch(endpoint, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log("Feedback Success:", data);
+                // Hide Form, Show Thank You
+                document.getElementById('feedbackContainer').style.display = 'none';
+                document.getElementById('feedbackThankYou').style.display = 'block';
+            })
+            .catch(error => {
+                console.error("Error submitting feedback:", error);
+                alert("Failed to submit feedback. Please try again.");
+                submitBtn.innerText = originalText;
+                submitBtn.disabled = false;
+            });
         }
 
         function resetFeedbackForm() {
@@ -719,6 +762,10 @@
             document.getElementById('feedbackContainer').style.display = 'none';
             document.getElementById('feedbackThankYou').style.display = 'none';
             document.getElementById('chatControls').style.display = 'flex';
+            
+            const submitBtn = document.querySelector('.feedback-submit-btn');
+            submitBtn.innerText = "Submit Feedback";
+            submitBtn.disabled = false;
         }
 
         // --- HELPER TO DISABLE/ENABLE MENU ---
@@ -766,6 +813,9 @@
         // --- LISTENER FOR EmbeddedMessageSent ---
         window.addEventListener("onEmbeddedMessageSent", (event) => {
             console.log("Received onEmbeddedMessageSent");
+            
+            // Capture Conversation ID
+            currentConversationId = event.detail.conversationId;
 
             const footer = document.querySelector('.chat-footer');
             const editorContainer = document.getElementById('editorContainer');
