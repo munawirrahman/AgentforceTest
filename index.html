@@ -107,7 +107,7 @@
             margin-bottom: 5px;
         }
 
-        /* ICON TOGGLE LOGIC */
+        /* ICON TOGGLE LOGIC: Ensures only ONE icon is visible at a time */
         .sidebar-toggle .icon-maximize { display: block; }
         .sidebar-toggle .icon-minimize { display: none; }
 
@@ -126,6 +126,7 @@
         
         .sidebar-toggle.chat-open.expanded { right: var(--chat-width-expanded); }
         
+        /* When Open: Hide Text, Hide Maximize, Show Minimize */
         .sidebar-toggle.chat-open .toggle-text { display: none; }
         .sidebar-toggle.chat-open .icon-maximize { display: none; }
         .sidebar-toggle.chat-open .icon-minimize { display: block; }
@@ -558,7 +559,7 @@
             width: 100%;
             transition: background 0.2s, transform 0.1s;
         }
-        .feedback-submit-btn:hover { background: #1e293b; }
+        .feedback-submit-btn:hover { opacity: 0.9; }
 
         #feedbackThankYou { display: none; text-align: center; width: 100%; padding: 15px; color: var(--brand-primary); font-weight: 600; }
 
