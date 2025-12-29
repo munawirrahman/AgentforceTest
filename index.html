@@ -107,7 +107,7 @@
             margin-bottom: 5px;
         }
 
-        /* ICON TOGGLE LOGIC: Ensures only ONE icon is visible at a time */
+        /* ICON TOGGLE LOGIC */
         .sidebar-toggle .icon-maximize { display: block; }
         .sidebar-toggle .icon-minimize { display: none; }
 
@@ -126,7 +126,6 @@
         
         .sidebar-toggle.chat-open.expanded { right: var(--chat-width-expanded); }
         
-        /* When Open: Hide Text, Hide Maximize, Show Minimize */
         .sidebar-toggle.chat-open .toggle-text { display: none; }
         .sidebar-toggle.chat-open .icon-maximize { display: none; }
         .sidebar-toggle.chat-open .icon-minimize { display: block; }
@@ -349,9 +348,8 @@
             background: white;
             padding: 1rem 1.2rem;
             display: none; 
-            flex-direction: column; /* CHANGED to Column for Feedback Form */
+            flex-direction: column; /* Column for Feedback Form */
             gap: 12px;
-            /*align-items: flex-end; removed for feedback flex*/
             flex-shrink: 0;
             position: relative;
             z-index: 45;
@@ -439,21 +437,21 @@
         /* --- EMOJI PICKER --- */
         .emoji-picker {
             position: absolute;
-            bottom: 100%; /* Sits directly on top of container */
+            bottom: 100%; 
             left: 0;
             background: white;
             border: 1px solid var(--border-color);
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0,0,0,0.15);
             padding: 10px;
-            display: none; /* Hidden by default */
+            display: none; 
             grid-template-columns: repeat(6, 1fr);
             gap: 4px;
             width: 240px;
             z-index: 100;
             max-height: 200px;
             overflow-y: auto;
-            margin-bottom: 8px; /* Gap between bubble and picker */
+            margin-bottom: 8px; 
         }
         
         .emoji-picker.show { display: grid; animation: fadeIn 0.15s ease-out; }
@@ -535,7 +533,7 @@
         
         .star-rating { display: flex; gap: 8px; margin-bottom: 8px; }
         .star { font-size: 24px; cursor: pointer; color: #cbd5e1; transition: color 0.2s; }
-        .star:hover, .star.active { color: #fbbf24; } /* Amber-400 */
+        .star:hover, .star.active { color: #fbbf24; } 
 
         #feedbackText {
             width: 100%;
@@ -547,17 +545,20 @@
             font-family: inherit;
         }
         
+        /* DARK PILL BUTTON FOR FEEDBACK SUBMIT */
         .feedback-submit-btn {
-            background: var(--brand-primary);
+            background: var(--brand-dark); /* Matches New Conversation button */
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 0.9rem;
+            padding: 12px 20px; 
+            border-radius: 30px; /* Fully rounded pill shape */
+            font-size: 1rem;
+            font-weight: 600; /* Semi-bold */
             cursor: pointer;
             width: 100%;
+            transition: background 0.2s, transform 0.1s;
         }
-        .feedback-submit-btn:hover { background: var(--brand-hover); }
+        .feedback-submit-btn:hover { background: #1e293b; }
 
         #feedbackThankYou { display: none; text-align: center; width: 100%; padding: 15px; color: var(--brand-primary); font-weight: 600; }
 
@@ -769,16 +770,9 @@
             const sendBtn = document.getElementById('sendBtn');
             const editor = document.getElementById('richTextEditor');
 
-            // 1. Show Footer if hidden (First Load or Restart)
-            if (footer && window.getComputedStyle(footer).display === 'none') {
-                 footer.style.display = 'flex';
-                 // Reset UI logic in case we came from Feedback screen
-                 resetFeedbackForm();
-                 
-                 editorContainer.style.display = 'flex';
-                 sendBtn.style.display = 'flex';
-                 editor.innerHTML = ''; 
-            }
+            // 1. Ensure Footer is visible and Form is Reset
+            if (footer) footer.style.display = 'flex';
+            resetFeedbackForm(); // Always force reset to chat input on new message
 
             // 3. Handle Role-based Logic
             const role = event.detail.conversationEntry.sender.role;
@@ -791,7 +785,6 @@
                 editorContainer.classList.remove('disabled');
                 editor.setAttribute('placeholder', 'Type a message...');
                 
-                // Focus Text Area
                 setTimeout(() => {
                    editor.focus();
                 }, 100);
