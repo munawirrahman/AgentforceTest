@@ -107,7 +107,6 @@
             margin-bottom: 5px;
         }
 
-        /* ICON TOGGLE LOGIC: Ensures only ONE icon is visible at a time */
         .sidebar-toggle .icon-maximize { display: block; }
         .sidebar-toggle .icon-minimize { display: none; }
 
@@ -126,7 +125,6 @@
         
         .sidebar-toggle.chat-open.expanded { right: var(--chat-width-expanded); }
         
-        /* When Open: Hide Text, Hide Maximize, Show Minimize */
         .sidebar-toggle.chat-open .toggle-text { display: none; }
         .sidebar-toggle.chat-open .icon-maximize { display: none; }
         .sidebar-toggle.chat-open .icon-minimize { display: block; }
@@ -252,7 +250,6 @@
         .menu-item:hover { background: #f0f9ff; color: var(--brand-primary); border-color: #bae6fd; }
         .menu-item:focus-visible { outline: none; background: #f0f9ff; box-shadow: 0 0 0 2px var(--brand-primary) inset; }
         
-        /* Disabled Menu Item Style */
         .menu-item.disabled {
             opacity: 0.5;
             cursor: not-allowed;
@@ -288,7 +285,7 @@
         .chat-wrapper.expanded .icon-expand { display: none; }
 
 
-        /* --- DISCLAIMER BANNER (CENTERED) --- */
+        /* --- DISCLAIMER BANNER --- */
         .privacy-banner {
             background-color: var(--brand-primary); 
             color: white;                           
@@ -300,37 +297,17 @@
             flex-shrink: 0;
             z-index: 40;
             border-bottom: 1px solid rgba(255,255,255,0.1);
-            
             display: flex;
             align-items: center; 
-            justify-content: center; /* Center Content */
-            text-align: center;      /* Center Text */
+            justify-content: center;
+            text-align: center;
             line-height: 1.4;
         }
 
-        .privacy-banner span {
-            flex: 1;            
-            min-width: 0;       
-            white-space: normal; 
-            word-wrap: break-word; 
-        }
+        .privacy-banner span { flex: 1; min-width: 0; white-space: normal; word-wrap: break-word; }
 
         .banner-close-btn {
-            background: transparent; 
-            border: none; 
-            color: rgba(255,255,255,0.8); 
-            font-size: 1.5rem; 
-            cursor: pointer; 
-            position: absolute; 
-            right: 10px; 
-            top: 50%; 
-            transform: translateY(-50%); 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            width: 30px; 
-            height: 30px; 
-            border-radius: 50%;
+            background: transparent; border: none; color: rgba(255,255,255,0.8); font-size: 1.5rem; cursor: pointer; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%;
         }
         .banner-close-btn:hover { color: white; background: rgba(255,255,255,0.2); }
         .banner-close-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px white; }
@@ -348,7 +325,7 @@
         .chat-footer {
             background: white;
             padding: 1rem 1.2rem;
-            display: none; /* Default Hidden */
+            display: none; 
             flex-direction: row; 
             gap: 12px;
             align-items: flex-end; 
@@ -365,8 +342,9 @@
             background: #fff;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
+            overflow: visible; /* Changed from hidden to allow emoji popup */
             flex: 1; 
+            position: relative; /* Context for popup */
             transition: all 0.2s ease;
         }
 
@@ -389,6 +367,7 @@
             gap: 4px;
             background: #f8fafc;
             border-bottom: 1px solid #e2e8f0;
+            border-radius: 18px 18px 0 0;
         }
 
         .chat-footer .icon-btn {
@@ -426,6 +405,40 @@
         
         .separator { width: 1px; background: #cbd5e1; margin: 0 6px; height: 16px; align-self: center; }
 
+        /* --- EMOJI PICKER --- */
+        .emoji-picker {
+            position: absolute;
+            bottom: 100%; /* Sits directly on top of container */
+            left: 0;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+            padding: 10px;
+            display: none; /* Hidden by default */
+            grid-template-columns: repeat(6, 1fr);
+            gap: 4px;
+            width: 240px;
+            z-index: 100;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 8px; /* Gap between bubble and picker */
+        }
+        
+        .emoji-picker.show { display: grid; animation: fadeIn 0.15s ease-out; }
+
+        .emoji-item {
+            font-size: 1.25rem;
+            padding: 6px;
+            cursor: pointer;
+            text-align: center;
+            border-radius: 6px;
+            user-select: none;
+        }
+        .emoji-item:hover { background: #f1f5f9; }
+        .emoji-item:focus { outline: none; background: #e0f2fe; }
+
+        /* --- RICH INPUT --- */
         .rich-input {
             padding: 12px 16px;
             min-height: 48px;
@@ -543,6 +556,10 @@
             </div>
 
             <div class="editor-container" id="editorContainer">
+                
+                <div class="emoji-picker" id="emojiPicker" aria-label="Emoji Picker">
+                    </div>
+
                 <div class="toolbar" role="toolbar" aria-label="Text Formatting">
                     <button class="tool-btn" data-cmd="bold" onmousedown="formatDoc('bold')" title="Bold" aria-label="Bold"><svg viewBox="0 0 24 24"><path d="M15.6 10.79c.97-.67 1.65-1.77 1.65-2.79 0-2.26-1.75-4-4-4H7v14h7.04c2.09 0 3.71-1.7 3.71-3.79 0-1.52-.86-2.82-2.15-3.42zM10 6.5h3c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5h-3v-3zm3.5 9H10v-3h3.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5z"/></svg></button>
                     <button class="tool-btn" data-cmd="italic" onmousedown="formatDoc('italic')" title="Italic" aria-label="Italic"><svg viewBox="0 0 24 24"><path d="M10 4v3h2.21l-3.42 8H6v3h8v-3h-2.21l3.42-8H18V4z"/></svg></button>
@@ -550,6 +567,10 @@
                     <div class="separator"></div>
                     <button class="tool-btn" data-cmd="insertUnorderedList" onmousedown="formatDoc('insertUnorderedList')" title="Bullet List" aria-label="Bullet List"><svg viewBox="0 0 24 24"><path d="M4 10.5c-.83 0-1.5.67-1.5 1.5s.67 1.5 1.5 1.5 1.5-.67 1.5-1.5-.67-1.5-1.5-1.5zm0-6c-.83 0-1.5.67-1.5 1.5S3.17 7.5 4 7.5 5.5 6.83 5.5 6 4.83 4.5 4 4.5zm0 12c-.83 0-1.5.68-1.5 1.5s.68 1.5 1.5 1.5 1.5-.68 1.5-1.5-.67-1.5-1.5-1.5zM7 19h14v-2H7v2zm0-6h14v-2H7v2zm0-8v2h14V5H7z"/></svg></button>
                     <button class="tool-btn" onmousedown="formatDoc('removeFormat')" title="Remove Formatting" aria-label="Remove Formatting"><svg viewBox="0 0 24 24"><path d="M19.8 8c1.1 0 2.2-.9 2.2-2s-.9-2.2-2.2-2.2-2.2.9-2.2 2 .9 2.2 2.2 2.2zm-2.5 5.5l.5.5H5.7l.5-.5 3.2-3.1c.3-.3.3-.8 0-1.1L8.5 8.4l-.5-.5H18l-.5.5-3.2 3.1c-.3.3-.3.8 0 1.1l.9.9z"/></svg></button>
+                    <div class="separator"></div>
+                    <button class="tool-btn" id="emojiBtn" onclick="toggleEmojiPicker(event)" title="Insert Emoji" aria-label="Insert Emoji">
+                        <svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/></svg>
+                    </button>
                 </div>
                 
                 <div id="richTextEditor" class="rich-input" contenteditable="true" placeholder="Connecting to agent..." 
@@ -570,16 +591,64 @@
         let hasSentConversationContext = false;
         let sendOnEnter = true; 
 
+        // --- EMOJI LOGIC ---
+        const emojiList = [
+            '😀','😃','😄','😁','😆','😅','🤣','😂','🙂','🙃','😉','😊','😇','😍','🤩','😘','😚','😋','😛','😜','🤪','😝','🤑','🤗','🤔','🤫','🤭','🤐','🤨','😐','😑','😶','😏','😒','🙄','😬','🤥','😌','😔','😪','🤤','😴','😷','🤒','🤕','🤢','🤮','🤧','🥵','🥶','🥴','😵','🤯','🤠','🥳','😎','🤓','🧐','😕','😟','🙁','😮','😯','😲','😳','🥺','😦','😧','😨','😰','😥','😢','😭','😱','😖','😣','😞','😓','😩','😫','😤','😡','😠','🤬','😈','👿','💀','☠️','🤡','💩','👻','👽','👾','🤖','🚗','🚘','🏎️','🚓','🚑','🚒','🚌','🚍','🚎','🚐','🚚','🚛','🚜','🏍️','🛵','🚲','🛴','🚨','🚥','🚦','🚧','⛽','🔧','🔨','🔩','⚙️','🛡️','🔑'
+        ];
+
+        function initEmojiPicker() {
+            const picker = document.getElementById('emojiPicker');
+            emojiList.forEach(emoji => {
+                const span = document.createElement('span');
+                span.textContent = emoji;
+                span.className = 'emoji-item';
+                span.onclick = (e) => {
+                    e.stopPropagation();
+                    insertEmoji(emoji);
+                };
+                // Keyboard accessibility
+                span.tabIndex = 0; 
+                span.onkeydown = (e) => {
+                    if(e.key === 'Enter') {
+                        e.stopPropagation();
+                        insertEmoji(emoji);
+                    }
+                };
+                picker.appendChild(span);
+            });
+        }
+
+        function toggleEmojiPicker(event) {
+            event.stopPropagation();
+            const picker = document.getElementById('emojiPicker');
+            const btn = document.getElementById('emojiBtn');
+            picker.classList.toggle('show');
+            btn.classList.toggle('active-state');
+        }
+
+        function insertEmoji(emoji) {
+            const editor = document.getElementById('richTextEditor');
+            editor.focus();
+            document.execCommand('insertText', false, emoji);
+            // Hide picker after insert
+            document.getElementById('emojiPicker').classList.remove('show');
+            document.getElementById('emojiBtn').classList.remove('active-state');
+        }
+
+        // Initialize immediately
+        initEmojiPicker();
+
+
         // --- HELPER TO DISABLE/ENABLE MENU ---
         function updateMenuState(shouldDisable) {
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(item => {
                 if (shouldDisable) {
                     item.classList.add('disabled');
-                    item.setAttribute('tabindex', '-1'); // Remove from keyboard tab order
+                    item.setAttribute('tabindex', '-1'); 
                 } else {
                     item.classList.remove('disabled');
-                    item.setAttribute('tabindex', '0'); // Restore keyboard focus
+                    item.setAttribute('tabindex', '0'); 
                 }
             });
         }
@@ -604,7 +673,6 @@
                 container.classList.add('disabled');
                 btn.disabled = true;
                 
-                // Disable menu items
                 updateMenuState(true);
 
                 if (event.data.detail && event.data.detail.placeholderText) {
@@ -619,14 +687,12 @@
 
             const footer = document.querySelector('.chat-footer');
             const editorContainer = document.getElementById('editorContainer');
-            // const statusMsg = document.getElementById('conversationStatus'); // Removed, using display:none on footer instead
             const sendBtn = document.getElementById('sendBtn');
             const editor = document.getElementById('richTextEditor');
 
             // 1. Show Footer if hidden (First Load or Restart)
             if (footer && window.getComputedStyle(footer).display === 'none') {
                  footer.style.display = 'flex';
-                 // Ensure internal elements are visible/reset
                  editorContainer.style.display = 'flex';
                  sendBtn.style.display = 'flex';
                  editor.innerHTML = ''; 
@@ -636,22 +702,21 @@
             const role = event.detail.conversationEntry.sender.role;
             if (role === 'EndUser') {
                 sendBtn.disabled = true;
-                updateMenuState(true); // Disable menu while waiting
+                updateMenuState(true); 
             } else if (role === 'Chatbot' || role === 'Agent') {
                 sendBtn.disabled = false;
                 editor.contentEditable = "true";
                 editorContainer.classList.remove('disabled');
                 editor.setAttribute('placeholder', 'Type a message...');
                 
-                // Focus Text Area (with a small timeout for reliability)
+                // Focus Text Area
                 setTimeout(() => {
                    editor.focus();
                 }, 100);
 
-                updateMenuState(false); // Enable menu when agent replies
+                updateMenuState(false); 
             }
 
-            // --- CONTEXT LOGIC ---
             if (!hasSentConversationContext) {
                 let cwcIframe = document.getElementById('embeddedMessagingFrame');
                 if (cwcIframe) {
@@ -669,7 +734,6 @@
         // --- LISTENER FOR ConversationClosed ---
         window.addEventListener("onEmbeddedMessagingConversationClosed", (event) => {
             console.log("Conversation Closed");
-            // Hide the entire footer
             const footer = document.querySelector('.chat-footer');
             if (footer) footer.style.display = 'none';
         });
@@ -691,7 +755,6 @@
                 wrapper.classList.add('visible');
                 toggle.classList.add('chat-open'); 
                 if(wrapper.classList.contains('expanded')) toggle.classList.add('expanded');
-                // Ensure focus moves to chat for accessibility
                 setTimeout(() => {
                    const editor = document.getElementById('richTextEditor');
                    if(editor) editor.focus();
@@ -768,7 +831,6 @@
         }
 
         function handleMenuAction(utterance) {
-            // Check if item is disabled
             if (event.currentTarget.classList.contains('disabled')) return;
             
             closeMenu(); 
@@ -843,12 +905,35 @@
         });
 
         function closePrivacyBanner() { document.getElementById('privacyBanner').style.display = 'none'; }
+        
+        // GLOBAL CLICK & BLUR HANDLER
         document.addEventListener('click', function(e) {
-            if (!document.getElementById('menuContainer').contains(e.target)) closeMenu();
+            const menu = document.getElementById('menuContainer');
+            const emoji = document.getElementById('emojiPicker');
+            const emojiBtn = document.getElementById('emojiBtn');
+
+            if (menu && !menu.contains(e.target)) closeMenu();
+            
+            // Close emoji picker if clicked outside
+            if (emoji && !emoji.contains(e.target) && e.target !== emojiBtn && !emojiBtn.contains(e.target)) {
+                emoji.classList.remove('show');
+                emojiBtn.classList.remove('active-state');
+            }
         });
 
         document.getElementById('headerDropdown').addEventListener('keydown', function(e) {
             if(e.key === 'Escape') closeMenu();
+        });
+        
+        window.addEventListener('blur', function() {
+           const menu = document.getElementById('headerDropdown');
+           if (menu.classList.contains('show')) closeMenu();
+           
+           const emoji = document.getElementById('emojiPicker');
+           if (emoji.classList.contains('show')) {
+               emoji.classList.remove('show');
+               document.getElementById('emojiBtn').classList.remove('active-state');
+           }
         });
 
     </script>
