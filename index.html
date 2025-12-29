@@ -12,7 +12,8 @@
             --brand-hover: #1e40af;         /* Blue 800 */
             --brand-gradient: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
             
-            --bg-dark: #0f172a;             /* Slate 900 */
+            --brand-dark: #0f172a;          /* Slate 900 - FIXED: Added this back */
+            --bg-dark: #0f172a;             
             --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             
             --text-on-dark: #f8fafc;        /* Slate 50 */
@@ -548,16 +549,16 @@
         
         /* DARK PILL BUTTON FOR FEEDBACK SUBMIT */
         .feedback-submit-btn {
-            background: var(--brand-dark); /* Matches New Conversation button */
+            background: var(--brand-dark); /* Uses the fixed variable */
             color: white;
             border: none;
             padding: 12px 20px; 
-            border-radius: 30px; /* Fully rounded pill shape */
+            border-radius: 30px; 
             font-size: 1rem;
-            font-weight: 600; /* Semi-bold */
+            font-weight: 600; 
             cursor: pointer;
             width: 100%;
-            transition: background 0.2s, transform 0.1s;
+            transition: opacity 0.2s;
         }
         .feedback-submit-btn:hover { opacity: 0.9; }
 
